@@ -1,7 +1,29 @@
 var GraphSvg = function () {
-    var gs = Object.create (null);
+    var gs = Object.create(null);
 
     gs.plotMultiple = function (title, xAxis, yAxis, graphDataArray) {
+        // condition the input arrays, because there's really no reason to 
+        // treat any number in the array as more than 6 decimal places more 
+        // precise than the order of magnitude of the delta, we copy the data 
+        // in the array, rounded to that degree of precision
+        /*
+        var targetPrecision = Math.pow(10, computeOrderOfMagnitude(delta) - 6);
+        console.log("Target Precision: " + targetPrecision);
+        */
+        var graphDataArrayCount = graphDataArray.length;
+        var newGraphDataArray = new Array(graphDataArrayCount);
+        for (var i = 0; i < graphDataArrayCount; ++i) {
+            var graphData = graphDataArray[i];
+            var graphDataCount = graphData.length;
+            var newGraphData = new Array(graphDataCount);
+            for (var j = 0; j < graphDataCount; ++j) {
+                var graphDatum = graphData[j];
+                newGraphData[j] = { x: new Number(graphDatum.x.toPrecision(6)), y: new Number(graphDatum.y.toPrecision(6)) };
+            }
+            newGraphDataArray[i] = newGraphData;
+        }
+        graphDataArray = newGraphDataArray;
+
         // compute the range of the input array and use that to compute the 
         // delta and a divisor that gives us less than 10 clean ticks
         var buildDomain = function (arrayOfArrays, selector, expandDelta, displaySize) {
@@ -45,6 +67,9 @@ var GraphSvg = function () {
             var max = arrayFilter (arrayOfArrays, Math.max, function(array) { return arrayFilter (array, Math.max, selector); });
             var delta = max - min;
             if (delta > 0) {
+                // we might want to expand the delta range a little bit for 
+                // display purposes, just so lines don't rest right on an
+                // edge of the graph
                 if (expandDelta) {
                     // expand the range by 1%...
                     var deltaDelta = delta * 0.01;

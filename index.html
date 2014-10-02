@@ -1,6 +1,7 @@
 <!doctype html> 
 <html>
     <head>
+        <meta charset="UTF-8">
         <title>Graph SVG Test</title>
         <link rel="stylesheet" href="style.css" />
         <script src="graph-svg.js"></script>
@@ -9,7 +10,9 @@
             // now evaluate the function
 			var graphData = [];
 			for (var x = -1.0; x <= 1.025; x += 0.05) {
-				graphData.push ({ x: x, y: (x * x) });
+			    x = new Number (x.toPrecision(6));
+			    graphData.push({ x: x, y: (x * x) });
+			    console.log("(" + x + ", " + (x * x) + ")");
 			}
 			var graphSvg = GraphSvg.plotSingle ("X * X", "X", "Y", graphData);
 			document.getElementById("display").innerHTML = graphSvg;
