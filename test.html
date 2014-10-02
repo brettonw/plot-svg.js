@@ -1,0 +1,21 @@
+<!doctype html> 
+<html>
+    <head>
+        <title>Graph SVG Test</title>
+        <link rel="stylesheet" href="style.css" />
+        <script src="graph-svg.js"></script>
+        <script type="text/javascript">
+        function initPage() {
+            // now evaluate the function
+			var graphData = [];
+			for (var x = -1.0; x <= 1.025; x += 0.05) {
+				graphData.push ({ x: x, y: (x * x) });
+			}
+			GraphSvg.plotSingle ("display", "X * X", "X", "Y", graphData);
+        }
+        </script> 
+    </head>
+    <body onload="initPage();">
+        <div id="display">display</div>
+    </body>
+</html>
