@@ -1,15 +1,7 @@
-function Plot () 
-{
-    this.tag = "display";
-    this.title = null;
-    this.xAxisTitle = null;
-    this.yAxisTitle = null;
-    
-    this.fromGraphDataArray = function (graphDataArray) 
-    {
-        //DEBUG_OUT(DEBUG_LEVEL.DBG, "fromGraphData", "graphData.length = " + graphData.length);
+var GraphSvg = function () {
+    var gs = Object.create (null);
 
-
+    gs.plotMultiple = function (divId, title, xAxis, yAxis, graphDataArray) {
         // compute the range of the input array and use that to compute the 
         // delta and a divisor that gives us less than 10 clean ticks
         var buildDomain = function (arrayOfArrays, selector, expandDelta, displaySize) {
@@ -59,7 +51,7 @@ function Plot ()
                     if (max != 0) {
                         max += deltaDelta;
                     }
-                    if ((min != 0) AND (min != 1)) {
+                    if ((min != 0) && (min != 1)) {
                         min -= deltaDelta;
                     }
                     delta = max - min;
@@ -191,10 +183,12 @@ function Plot ()
         // close the plot
         svg += "</svg></div>"
         
-        document.getElementById(this.tag).innerHTML += svg + "<br>";
+        document.getElementById(divId).innerHTML += svg + "<br>";
     };
 
-    this.fromGraphData = function (graphData) {
-        this.fromGraphDataArray ([graphData]);
+    gs.plotSingle = function (divId, title, xAxis, yAxis, graphData) {
+        return gs.plotMultiple (divId, title, xAxis, yAxis, [graphData]);
     }
-}
+
+    return gs;
+} ();
