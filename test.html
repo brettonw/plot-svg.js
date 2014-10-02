@@ -11,11 +11,12 @@
 			for (var x = -1.0; x <= 1.025; x += 0.05) {
 				graphData.push ({ x: x, y: (x * x) });
 			}
-			GraphSvg.plotSingle ("display", "X * X", "X", "Y", graphData);
+			var graphSvg = GraphSvg.plotSingle ("X * X", "X", "Y", graphData);
+			document.getElementById("display").innerHTML = graphSvg;
         }
         </script> 
     </head>
     <body onload="initPage();">
-        <div id="display">display</div>
+        <div id="display" class="centered"></div>
     </body>
 </html>

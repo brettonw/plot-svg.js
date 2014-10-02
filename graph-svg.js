@@ -1,7 +1,7 @@
 var GraphSvg = function () {
     var gs = Object.create (null);
 
-    gs.plotMultiple = function (divId, title, xAxis, yAxis, graphDataArray) {
+    gs.plotMultiple = function (title, xAxis, yAxis, graphDataArray) {
         // compute the range of the input array and use that to compute the 
         // delta and a divisor that gives us less than 10 clean ticks
         var buildDomain = function (arrayOfArrays, selector, expandDelta, displaySize) {
@@ -113,7 +113,7 @@ var GraphSvg = function () {
             }
         };
 
-        // create the raw SVG picture for display
+        // create the raw SVG picture for display, assumes a width/height aspect ratio of 3/2
         var buffer = 0.15;
         var svg = '<div class="svg-div">' +
                     '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" ' +
@@ -181,13 +181,12 @@ var GraphSvg = function () {
         }
 
         // close the plot
-        svg += "</svg></div><br>"
-        
-        document.getElementById(divId).innerHTML += svg;
+        svg += "</svg></div><br>";
+        return svg;
     };
 
-    gs.plotSingle = function (divId, title, xAxis, yAxis, graphData) {
-        return gs.plotMultiple (divId, title, xAxis, yAxis, [graphData]);
+    gs.plotSingle = function (title, xAxis, yAxis, graphData) {
+        return gs.plotMultiple (title, xAxis, yAxis, [graphData]);
     }
 
     return gs;
