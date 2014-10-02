@@ -154,18 +154,18 @@ var GraphSvg = function () {
         }
 
         // draw the title
-        if (this.title) {
-            svg += '<text  x="' + (right / 2.0) + '" y="' + -(top + 0.075) + '" font-size="0.075" font-family="Arial" dominant-baseline="middle" text-anchor="middle" fill="#404040" transform="scale(1,-1)">' + this.title + '</text>';
+        if (title != null) {
+            svg += '<text  x="' + (right / 2.0) + '" y="' + -(top + 0.075) + '" font-size="0.075" font-family="Arial" dominant-baseline="middle" text-anchor="middle" fill="#404040" transform="scale(1,-1)">' + title + '</text>';
         }
 
         // draw the x-axis label
-        if (this.xAxisTitle) {
-            svg += '<text  x="' + (right / 2.0) + '" y="0.1" font-size="0.05" font-family="Arial" dominant-baseline="middle" text-anchor="middle" fill="#404040" transform="scale(1,-1)">' + this.xAxisTitle + '</text>';
+        if (xAxis != null) {
+            svg += '<text  x="' + (right / 2.0) + '" y="0.1" font-size="0.05" font-family="Arial" dominant-baseline="middle" text-anchor="middle" fill="#404040" transform="scale(1,-1)">' + xAxis + '</text>';
         }
 
         // draw the y-axis label
-        if (this.yAxisTitle) {
-            svg += '<text  x="' + (top / 2.0) + '" y="' + -(buffer + 0.025) + '" font-size="0.05" font-family="Arial" dominant-baseline="middle" text-anchor="middle" fill="#404040" transform="scale(1,-1), rotate(-90)">' + this.yAxisTitle + '</text>';
+        if (yAxis != null) {
+            svg += '<text  x="' + (top / 2.0) + '" y="' + -(buffer + 0.025) + '" font-size="0.05" font-family="Arial" dominant-baseline="middle" text-anchor="middle" fill="#404040" transform="scale(1,-1), rotate(-90)">' + yAxis + '</text>';
         }
 
         // make the plots
@@ -181,9 +181,9 @@ var GraphSvg = function () {
         }
 
         // close the plot
-        svg += "</svg></div>"
+        svg += "</svg></div><br>"
         
-        document.getElementById(divId).innerHTML += svg + "<br>";
+        document.getElementById(divId).innerHTML += svg;
     };
 
     gs.plotSingle = function (divId, title, xAxis, yAxis, graphData) {
