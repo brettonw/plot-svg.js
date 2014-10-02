@@ -9,7 +9,7 @@
         function initPage() {
             // now evaluate the function
 			var graphData = [];
-			for (var x = -1.0; x <= 1.025; x += 0.05) {
+			for (var x = -10.0; x <= 10.25; x += 0.5) {
 			    x = new Number (x.toPrecision(6));
 			    graphData.push({ x: x, y: (x * x) });
 			    console.log("(" + x + ", " + (x * x) + ")");

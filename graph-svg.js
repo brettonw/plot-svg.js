@@ -2,14 +2,16 @@ var GraphSvg = function () {
     var gs = Object.create(null);
 
     gs.plotMultiple = function (title, xAxis, yAxis, graphDataArray) {
-        // condition the input arrays, because there's really no reason to 
-        // treat any number in the array as more than 6 decimal places more 
-        // precise than the order of magnitude of the delta, we copy the data 
-        // in the array, rounded to that degree of precision
+        // condition the input arrays, there's really no reason to treat any 
+        // number in the array as more than 4 or 5 decimal places worth of
+        // information because that puts them in sub-sub-pixel range for almost
+        // all rendering cases, we copy the data in the array, rounded to the 
+        // needed degree of precision
         /*
         var targetPrecision = Math.pow(10, computeOrderOfMagnitude(delta) - 6);
         console.log("Target Precision: " + targetPrecision);
         */
+        var targetGraphDataPrecision = 4;
         var graphDataArrayCount = graphDataArray.length;
         var newGraphDataArray = new Array(graphDataArrayCount);
         for (var i = 0; i < graphDataArrayCount; ++i) {
@@ -18,7 +20,7 @@ var GraphSvg = function () {
             var newGraphData = new Array(graphDataCount);
             for (var j = 0; j < graphDataCount; ++j) {
                 var graphDatum = graphData[j];
-                newGraphData[j] = { x: new Number(graphDatum.x.toPrecision(6)), y: new Number(graphDatum.y.toPrecision(6)) };
+                newGraphData[j] = { x: new Number(graphDatum.x.toPrecision(targetGraphDataPrecision)), y: new Number(graphDatum.y.toPrecision(targetGraphDataPrecision)) };
             }
             newGraphDataArray[i] = newGraphData;
         }
@@ -129,7 +131,7 @@ var GraphSvg = function () {
         // compute the domain of the data
         var domain = {
             x: buildDomain (graphDataArray, 'x', false, 1.5),
-            y: buildDomain (graphDataArray, 'y', true, 1.0),
+            y: buildDomain (graphDataArray, 'y', false, 1.0),
             map: function (xy) {
                 return {
                     x: this.x.map (xy.x),
