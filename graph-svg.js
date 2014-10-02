@@ -167,7 +167,7 @@ var GraphSvg = function () {
             var ti = domain.x.ticks[i];
             var tick = domain.x.map (ti);
             svg += '<line x1="' + tick + '" y1="0" x2="' + tick + '" y2="' + top + '" stroke="#c0c0c0" stroke-width="0.005" />'
-            svg += '<text  x="' + tick + '" y="0.04" font-size="0.03" font-family="Arial" dominant-baseline="middle" text-anchor="middle" fill="#808080" transform="scale(1,-1)">' + labelText (ti, domain.x.orderOfMagnitude, domain.x.precision) + '</text>';
+            svg += '<text  x="' + tick + '" y="0.04" font-size="0.03" font-family="sans-serif" dominant-baseline="middle" text-anchor="middle" fill="#808080" transform="scale(1,-1)">' + labelText(ti, domain.x.orderOfMagnitude, domain.x.precision) + '</text>';
         }
 
         // draw the y ticks
@@ -177,22 +177,22 @@ var GraphSvg = function () {
             var ti = domain.y.ticks[i];
             var tick = domain.y.map (ti);
             svg += '<line x1="0" y1="' + tick + '" x2="' + right + '" y2="' + tick + '" stroke="#c0c0c0" stroke-width="0.005" />'
-            svg += '<text  x="-0.02" y="' + -tick + '" font-size="0.03" font-family="Arial" dominant-baseline="middle" text-anchor="end" fill="#808080" transform="scale(1,-1)">' + labelText (ti, domain.y.orderOfMagnitude, domain.y.precision) + '</text>';
+            svg += '<text  x="-0.02" y="' + -tick + '" font-size="0.03" font-family="sans-serif" dominant-baseline="middle" text-anchor="end" fill="#808080" transform="scale(1,-1)">' + labelText(ti, domain.y.orderOfMagnitude, domain.y.precision) + '</text>';
         }
 
         // draw the title
         if (title != null) {
-            svg += '<text  x="' + (right / 2.0) + '" y="' + -(top + 0.075) + '" font-size="0.075" font-family="Arial" dominant-baseline="middle" text-anchor="middle" fill="#404040" transform="scale(1,-1)">' + title + '</text>';
+            svg += '<text  x="' + (right / 2.0) + '" y="' + -(top + 0.075) + '" font-size="0.075" font-family="sans-serif" dominant-baseline="middle" text-anchor="middle" fill="#404040" transform="scale(1,-1)">' + title + '</text>';
         }
 
         // draw the x-axis label
         if (xAxis != null) {
-            svg += '<text  x="' + (right / 2.0) + '" y="0.1" font-size="0.05" font-family="Arial" dominant-baseline="middle" text-anchor="middle" fill="#404040" transform="scale(1,-1)">' + xAxis + '</text>';
+            svg += '<text  x="' + (right / 2.0) + '" y="0.1" font-size="0.05" font-family="sans-serif" dominant-baseline="middle" text-anchor="middle" fill="#404040" transform="scale(1,-1)">' + xAxis + '</text>';
         }
 
         // draw the y-axis label
         if (yAxis != null) {
-            svg += '<text  x="' + (top / 2.0) + '" y="' + -(buffer + 0.025) + '" font-size="0.05" font-family="Arial" dominant-baseline="middle" text-anchor="middle" fill="#404040" transform="scale(1,-1), rotate(-90)">' + yAxis + '</text>';
+            svg += '<text  x="' + (top / 2.0) + '" y="' + -(buffer + 0.025) + '" font-size="0.05" font-family="sans-serif" dominant-baseline="middle" text-anchor="middle" fill="#404040" transform="scale(1,-1), rotate(-90)">' + yAxis + '</text>';
         }
 
         // make the plots
