@@ -142,8 +142,8 @@ var GraphSvg = function () {
 
         // create the raw SVG picture for display, assumes a width/height aspect ratio of 3/2
         var buffer = 0.15;
-        var svg = '<div class="svg-div">' +
-                    '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" ' +
+        var svg = '<div class="graph-svg-div">' +
+                    '<svg class="graph-svg-svg" xmlns="http://www.w3.org/2000/svg" version="1.1" ' +
                     'viewBox="' + ((7.0 * -buffer) / 4.0) + ', ' + (-buffer) + ', ' + (domain.x.displaySize + (3.0 * buffer)) + ', ' + (domain.y.displaySize + (2.0 * buffer)) + '" ' +
                     'preserveAspectRatio="xMidYMid meet"' + 
                     '>' +
@@ -167,7 +167,7 @@ var GraphSvg = function () {
             var ti = domain.x.ticks[i];
             var tick = domain.x.map (ti);
             svg += '<line x1="' + tick + '" y1="0" x2="' + tick + '" y2="' + top + '" stroke="#c0c0c0" stroke-width="0.005" />'
-            svg += '<text  x="' + tick + '" y="0.04" font-size="0.03" font-family="sans-serif" dominant-baseline="middle" text-anchor="middle" fill="#808080" transform="scale(1,-1)">' + labelText(ti, domain.x.orderOfMagnitude, domain.x.precision) + '</text>';
+            svg += '<text  x="' + tick + '" y="0.04" class="graph-svg-ticks" dominant-baseline="middle" text-anchor="middle" fill="#808080" transform="scale(1,-1)">' + labelText(ti, domain.x.orderOfMagnitude, domain.x.precision) + '</text>';
         }
 
         // draw the y ticks
@@ -177,7 +177,7 @@ var GraphSvg = function () {
             var ti = domain.y.ticks[i];
             var tick = domain.y.map (ti);
             svg += '<line x1="0" y1="' + tick + '" x2="' + right + '" y2="' + tick + '" stroke="#c0c0c0" stroke-width="0.005" />'
-            svg += '<text  x="-0.02" y="' + -tick + '" font-size="0.03" font-family="sans-serif" dominant-baseline="middle" text-anchor="end" fill="#808080" transform="scale(1,-1)">' + labelText(ti, domain.y.orderOfMagnitude, domain.y.precision) + '</text>';
+            svg += '<text  x="-0.02" y="' + -tick + '" class="graph-svg-ticks" dominant-baseline="middle" text-anchor="end" fill="#808080" transform="scale(1,-1)">' + labelText(ti, domain.y.orderOfMagnitude, domain.y.precision) + '</text>';
         }
 
         // draw the title

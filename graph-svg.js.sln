@@ -5,6 +5,7 @@ VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "graph-svg.js", "graph-svg.js", "{F330DE23-095B-424E-9C26-D33AFC9A3998}"
 	ProjectSection(SolutionItems) = preProject
+		graph-svg.css = graph-svg.css
 		graph-svg.js = graph-svg.js
 		index.html = index.html
 		LICENSE = LICENSE
