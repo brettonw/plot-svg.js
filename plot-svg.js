@@ -155,7 +155,7 @@ var PlotSvg = function () {
         var labelText = function (number, order, precision) {
             var divisor = Math.pow(10, order);
             var value = number / divisor;
-            if ((order > -2) && (order < 2)) {
+            if (Math.abs (order) <= 3) {
                 value *= Math.pow(10, order);
                 precision -= order;
                 order = 0;
