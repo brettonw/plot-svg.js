@@ -138,7 +138,7 @@ var PlotSvg = function () {
                 };
             }
         };
-    }
+    };
 
     private.startPlot = function (title, xAxis, yAxis, domain) {
         // create the raw SVG picture for display, assumes a width/height aspect ratio of 3/2
@@ -226,7 +226,7 @@ var PlotSvg = function () {
 
     ps.singleLine = function (title, xAxis, yAxis, plotData) {
         return this.multipleLine(title, xAxis, yAxis, [plotData]);
-    }
+    };
 
     ps.scatter = function (title, xAxis, yAxis, plotData) {
         var conditionedPlotDataArray = private.conditionPlotDataArray([plotData]);
@@ -248,7 +248,12 @@ var PlotSvg = function () {
         // finish the plot
         var svg = private.finishPlot(svg);
         return svg;
-    }
+    };
+
+    ps.wrap = function (svg, width, cssClass) {
+        var height = (2 * width) / 3;
+        return '<div style="width:' + width + 'px;height:' + height + 'px;padding:0px;border:none;" class="' + cssClass + '">' + svg + '</div>';
+    };
 
     return ps;
 } ();
