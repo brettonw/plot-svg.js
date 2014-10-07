@@ -10,7 +10,7 @@
         function initPage() {
             // now evaluate the function
 			var plotData = [];
-			for (var x = -10.0; x <= 10.25; x += 0.5) {
+			for (var x = -100.0; x <= 102.5; x += 5.0) {
 			    x = new Number (x.toPrecision(6));
 			    plotData.push({ x: x, y: (x * x) });
 			    console.log("(" + x + ", " + (x * x) + ")");

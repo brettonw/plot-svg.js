@@ -155,6 +155,11 @@ var PlotSvg = function () {
         var labelText = function (number, order, precision) {
             var divisor = Math.pow(10, order);
             var value = number / divisor;
+            if ((order > -2) && (order < 2)) {
+                value *= Math.pow(10, order);
+                precision -= order;
+                order = 0;
+            }
             if (value != 0) {
                 return value.toFixed(precision).toString() + ((order != 0) ? ("e" + order) : "");
             }
