@@ -16,12 +16,11 @@
 			    console.log("(" + x + ", " + (x * x) + ")");
 			}
 			var plotSvg = PlotSvg.singleLine("X * X", "X", "Y", plotData);
-			plotSvg = PlotSvg.wrap(plotSvg, 450, "centered");
-			document.getElementById("display").innerHTML = plotSvg;
+			plotSvg = PlotSvg.wrap(plotSvg, 450, "display", "centered");
+			document.getElementById("body").innerHTML = plotSvg;
         }
         </script> 
     </head>
-    <body onload="initPage();">
-        <div id="display"></div>
+    <body id="body" onload="initPage();">
     </body>
 </html>

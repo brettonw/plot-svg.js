@@ -250,11 +250,11 @@ var PlotSvg = function () {
         return svg;
     };
 
-    ps.wrap = function (svg, width, id, cssClass) {
+    ps.wrap = function (svg, width, divId, cssClass) {
         var height = (2 * width) / 3;
         var result = '<div ';
-        if (id != null) {
-            result += 'id="' + id + '" ';
+        if (divId != null) {
+            result += 'id="' + divId + '" ';
         }
         result += 'style="width:' + width + 'px;height:' + height + 'px;padding:0px;border:none;" ';
         if (cssClass != null) {
