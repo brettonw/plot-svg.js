@@ -1,4 +1,4 @@
-div.graph-svg-div {
+div.plot-svg-div {
     background-color:   #FF0000;
     width:              100%;
     height:             100%;
@@ -8,7 +8,7 @@ div.graph-svg-div {
     display:            block;
 }
 
-svg.graph-svg-svg {
+svg.plot-svg-svg {
     background-color:   #e4e4e4;
     width:              100%;
     height:             100%;
@@ -16,7 +16,7 @@ svg.graph-svg-svg {
     margin:             0;
 }
 
-text.graph-svg-ticks {
+text.plot-svg-ticks {
     font-size:          0.045px; 
     font-family:        sans-serif;
 }
