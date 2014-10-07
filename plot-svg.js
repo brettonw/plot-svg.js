@@ -250,9 +250,18 @@ var PlotSvg = function () {
         return svg;
     };
 
-    ps.wrap = function (svg, width, cssClass) {
+    ps.wrap = function (svg, width, id, cssClass) {
         var height = (2 * width) / 3;
-        return '<div style="width:' + width + 'px;height:' + height + 'px;padding:0px;border:none;" class="' + cssClass + '">' + svg + '</div>';
+        var result = '<div ';
+        if (id != null) {
+            result += 'id="' + id + '" ';
+        }
+        result += 'style="width:' + width + 'px;height:' + height + 'px;padding:0px;border:none;" ';
+        if (cssClass != null) {
+            result += 'class="' + cssClass + '" ';
+        }
+        result += '>' + svg + '</div>';
+        return result;
     };
 
     return ps;
