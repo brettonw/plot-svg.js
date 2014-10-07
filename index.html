@@ -2,21 +2,21 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>Graph SVG Test</title>
+        <title>Plot SVG Test</title>
         <link rel="stylesheet" href="style.css" />
-        <link rel="stylesheet" href="graph-svg.css" />
-        <script src="graph-svg.js"></script>
+        <link rel="stylesheet" href="plot-svg.css" />
+        <script src="plot-svg.js"></script>
         <script type="text/javascript">
         function initPage() {
             // now evaluate the function
-			var graphData = [];
+			var plotData = [];
 			for (var x = -10.0; x <= 10.25; x += 0.5) {
 			    x = new Number (x.toPrecision(6));
-			    graphData.push({ x: x, y: (x * x) });
+			    plotData.push({ x: x, y: (x * x) });
 			    console.log("(" + x + ", " + (x * x) + ")");
 			}
-			var graphSvg = GraphSvg.plotSingle ("X * X", "X", "Y", graphData);
-			document.getElementById("display").innerHTML = graphSvg;
+			var plotSvg = PlotSvg.plotSingle ("X * X", "X", "Y", plotData);
+			document.getElementById("display").innerHTML = plotSvg;
         }
         </script> 
     </head>
