@@ -1,8 +1,7 @@
 var PlotSvg = function () {
     var ps = Object.create(null);
-    var private = Object.create(null);
 
-    private.conditionPlotDataArray = function (plotDataArray) {
+    var conditionPlotDataArray = function (plotDataArray) {
         // condition the input arrays, there's really no reason to treat any 
         // number in the array as more than 4 or 5 decimal places worth of
         // information because that puts them in sub-sub-pixel range for almost
@@ -24,7 +23,7 @@ var PlotSvg = function () {
         return newPlotDataArray;
     };
 
-    private.buildDomain = function (plotDataArray) {
+    var buildDomain = function (plotDataArray) {
         // compute the range of the input array and use that to compute the 
         // delta and a divisor that gives us less than 10 clean ticks
         var buildAxisDomain = function (arrayOfArrays, selector, expandDelta, displaySize) {
@@ -140,7 +139,7 @@ var PlotSvg = function () {
         };
     };
 
-    private.startPlot = function (title, xAxis, yAxis, domain) {
+    var startPlot = function (title, xAxis, yAxis, domain) {
         // create the raw SVG picture for display, assumes a width/height aspect ratio of 3/2
         var buffer = 0.15;
         var svg = '<div class="plot-svg-div">' +
@@ -203,14 +202,14 @@ var PlotSvg = function () {
         return svg;
     };
 
-    private.finishPlot = function (svg) {
+    var finishPlot = function (svg) {
         return svg + "</svg></div><br>";
     };
 
     ps.multipleLine = function (title, xAxis, yAxis, plotDataArray) {
-        var conditionedPlotDataArray = private.conditionPlotDataArray(plotDataArray);
-        var domain = private.buildDomain(conditionedPlotDataArray);
-        var svg = private.startPlot(title, xAxis, yAxis, domain);
+        var conditionedPlotDataArray = conditionPlotDataArray(plotDataArray);
+        var domain = buildDomain(conditionedPlotDataArray);
+        var svg = startPlot(title, xAxis, yAxis, domain);
 
         // make the plots
         var colors = ["blue", "red", "green", "orange", "purple"];
@@ -225,7 +224,7 @@ var PlotSvg = function () {
         }
 
         // finish the plot
-        var svg = private.finishPlot(svg);
+        var svg = finishPlot(svg);
         return svg;
     };
 
@@ -234,9 +233,9 @@ var PlotSvg = function () {
     };
 
     ps.scatter = function (title, xAxis, yAxis, plotData) {
-        var conditionedPlotDataArray = private.conditionPlotDataArray([plotData]);
-        var domain = private.buildDomain(conditionedPlotDataArray);
-        var svg = private.startPlot(title, xAxis, yAxis, domain);
+        var conditionedPlotDataArray = conditionPlotDataArray([plotData]);
+        var domain = buildDomain(conditionedPlotDataArray);
+        var svg = startPlot(title, xAxis, yAxis, domain);
 
         // make the plot
         /*
@@ -251,7 +250,7 @@ var PlotSvg = function () {
             */
 
         // finish the plot
-        var svg = private.finishPlot(svg);
+        var svg = finishPlot(svg);
         return svg;
     };
 
