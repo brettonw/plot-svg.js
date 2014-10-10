@@ -2,10 +2,10 @@ var PlotSvg = function () {
     var ps = Object.create(null);
 
     var conditionPlotDataArray = function (plotDataArray) {
-        // condition the input arrays, there's really no reason to treat any 
+        // condition the input arrays, there's really no reason to treat any
         // number in the array as more than 4 or 5 decimal places worth of
         // information because that puts them in sub-sub-pixel range for almost
-        // all rendering cases, we copy the data in the array, rounded to the 
+        // all rendering cases, we copy the data in the array, rounded to the
         // needed degree of precision
         var targetPlotDataPrecision = 4;
         var plotDataArrayCount = plotDataArray.length;
@@ -24,7 +24,7 @@ var PlotSvg = function () {
     };
 
     var buildDomain = function (plotDataArray) {
-        // compute the range of the input array and use that to compute the 
+        // compute the range of the input array and use that to compute the
         // delta and a divisor that gives us less than 10 clean ticks
         var buildAxisDomain = function (arrayOfArrays, selector, expandDelta, displaySize) {
             // a function to compute the order of magintude of a number, to use
@@ -62,12 +62,13 @@ var PlotSvg = function () {
                     }
                 }
                 return result;
-            }
+            };
+
             var min = arrayFilter(arrayOfArrays, Math.min, function (array) { return arrayFilter(array, Math.min, selector); });
             var max = arrayFilter(arrayOfArrays, Math.max, function (array) { return arrayFilter(array, Math.max, selector); });
             var delta = max - min;
             if (delta > 0) {
-                // we might want to expand the delta range a little bit for 
+                // we might want to expand the delta range a little bit for
                 // display purposes, just so lines don't rest right on an
                 // edge of the plot
                 if (expandDelta) {
@@ -139,6 +140,8 @@ var PlotSvg = function () {
         };
     };
 
+
+
     var startPlot = function (title, xAxis, yAxis, domain) {
         // create the raw SVG picture for display, assumes a width/height aspect ratio of 3/2
         var buffer = 0.15;
@@ -149,7 +152,7 @@ var PlotSvg = function () {
                     '>' +
                     '<g transform="translate(0, 1), scale(1, -1)">';
 
-        // format plot labels according to their order of magnitude and 
+        // format plot labels according to their order of magnitude and
         // desired precision
         var labelText = function (number, order, precision) {
             var divisor = Math.pow(10, order);
@@ -199,12 +202,17 @@ var PlotSvg = function () {
         if (yAxis != null) {
             svg += '<text  x="' + (top / 2.0) + '" y="' + -(buffer + 0.025) + '" font-size="0.05" font-family="sans-serif" dominant-baseline="middle" text-anchor="middle" fill="#404040" transform="scale(1,-1), rotate(-90)">' + yAxis + '</text>';
         }
+
         return svg;
     };
+
+
 
     var finishPlot = function (svg) {
         return svg + "</svg></div><br>";
     };
+
+
 
     ps.multipleLine = function (title, xAxis, yAxis, plotDataArray) {
         var conditionedPlotDataArray = conditionPlotDataArray(plotDataArray);
@@ -228,9 +236,13 @@ var PlotSvg = function () {
         return svg;
     };
 
+
+
     ps.singleLine = function (title, xAxis, yAxis, plotData) {
         return this.multipleLine(title, xAxis, yAxis, [plotData]);
     };
+
+
 
     ps.scatter = function (title, xAxis, yAxis, plotData) {
         var conditionedPlotDataArray = conditionPlotDataArray([plotData]);
