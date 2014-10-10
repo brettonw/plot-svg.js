@@ -140,8 +140,6 @@ var PlotSvg = function () {
         };
     };
 
-
-
     var startPlot = function (title, xAxis, yAxis, domain) {
         // create the raw SVG picture for display, assumes a width/height aspect ratio of 3/2
         var buffer = 0.15;
