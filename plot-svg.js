@@ -27,6 +27,15 @@ var PlotSvg = function () {
         // compute the range of the input array and use that to compute the
         // delta and a divisor that gives us less than 10 clean ticks
         var buildAxisDomain = function (arrayOfArrays, selector, expandDelta, displaySize) {
+            // start by creating the base domain object, with the mapping from
+            // compute space to display space, and empty ticks
+            var domain = Object.create(null);
+            domain.displaySize = displaySize;
+            domain.map = function (value) {
+                return this.displaySize * (value - this.min) / this.delta;
+            };
+            domain.ticks = [];
+
             // a function to compute the order of magintude of a number, to use
             // for scaling
             var computeOrderOfMagnitude = function (number) {
@@ -64,6 +73,7 @@ var PlotSvg = function () {
                 return result;
             };
 
+            // compute the ranges...
             var min = arrayFilter(arrayOfArrays, Math.min, function (array) { return arrayFilter(array, Math.min, selector); });
             var max = arrayFilter(arrayOfArrays, Math.max, function (array) { return arrayFilter(array, Math.max, selector); });
             var delta = max - min;
@@ -94,37 +104,23 @@ var PlotSvg = function () {
                 }
 
                 // now round the top and bottom to that divisor, and build the
-                // domain object
-                var domain = function () {
-                    var domain = Object.create(null);
+                // domain object, starting with the basics
+                domain.min = Math.floor(min / tickDivisor) * tickDivisor;
+                domain.max = Math.ceil(max / tickDivisor) * tickDivisor;
+                domain.delta = domain.max - domain.min;
+                domain.orderOfMagnitude = computeOrderOfMagnitude(domain.max);
 
-                    // the basics
-                    domain.min = Math.floor(min / tickDivisor) * tickDivisor;
-                    domain.max = Math.ceil(max / tickDivisor) * tickDivisor;
-                    domain.delta = domain.max - domain.min;
-                    domain.orderOfMagnitude = computeOrderOfMagnitude(domain.max);
+                // the numeric display precision
+                domain.precision = tryPrecision[tickDivisorIndex];
 
-                    // the numeric display precision
-                    domain.precision = tryPrecision[tickDivisorIndex];
-
-                    // the mapping from compute space to display space
-                    domain.displaySize = displaySize;
-                    domain.map = function (value) {
-                        return this.displaySize * (value - this.min) / this.delta;
-                    };
-
-                    // the ticks
-                    var tickCount = Math.round((domain.max - domain.min) / tickDivisor);
-                    domain.ticks = [];
-                    var incr = (domain.max - domain.min) / tickCount;
-                    for (var i = 0; i <= tickCount; ++i) {
-                        domain.ticks.push(domain.min + (i * incr));
-                    }
-                    return domain;
-                }();
-                return domain;
+                // the ticks
+                var tickCount = Math.round((domain.max - domain.min) / tickDivisor);
+                var incr = (domain.max - domain.min) / tickCount;
+                for (var i = 0; i <= tickCount; ++i) {
+                    domain.ticks.push(domain.min + (i * incr));
+                }
             }
-            return null;
+            return domain;
         };
 
         // compute the domain of the data
