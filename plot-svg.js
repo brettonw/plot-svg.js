@@ -162,7 +162,7 @@ var PlotSvg = function () {
             var value = number / divisor;
             if (Math.abs (order) <= 3) {
                 value *= Math.pow(10, order);
-                precision -= order;
+                precision = Math.max (0, precision - order);
                 order = 0;
             }
             if (value != 0) {
