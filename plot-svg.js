@@ -200,13 +200,9 @@ var PlotSvg = function () {
         return svg;
     };
 
-
-
     var finishPlot = function (svg) {
         return svg + "</svg></div><br>";
     };
-
-
 
     ps.multipleLine = function (title, xAxis, yAxis, plotDataArray) {
         var conditionedPlotDataArray = conditionPlotDataArray(plotDataArray);
@@ -216,13 +212,16 @@ var PlotSvg = function () {
         // make the plots
         var colors = ["blue", "red", "green", "orange", "purple"];
         for (var i = 0, count = conditionedPlotDataArray.length; i < count; ++i) {
-            svg += '<polyline fill="none" stroke="' + colors[i] + '" stroke-width="0.0075" points="';
             var plotData = conditionedPlotDataArray[i];
-            for (var j = 0, jcount = plotData.length; j < jcount; ++j) {
-                var datum = domain.map(plotData[j]);
-                svg += datum.x + ',' + datum.y + ' ';
+            var plotCount = plotData.length;
+            if (plotCount > 1) {
+                svg += '<polyline fill="none" stroke="' + colors[i] + '" stroke-width="0.0075" points="';
+                for (var j = 0; j < plotCount; ++j) {
+                    var datum = domain.map(plotData[j]);
+                    svg += datum.x + ',' + datum.y + ' ';
+                }
+                svg += '" />';
             }
-            svg += '" />';
         }
 
         // finish the plot
@@ -230,13 +229,9 @@ var PlotSvg = function () {
         return svg;
     };
 
-
-
     ps.singleLine = function (title, xAxis, yAxis, plotData) {
         return this.multipleLine(title, xAxis, yAxis, [plotData]);
     };
-
-
 
     ps.scatter = function (title, xAxis, yAxis, plotData) {
         var conditionedPlotDataArray = conditionPlotDataArray([plotData]);
