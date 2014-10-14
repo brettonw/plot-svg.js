@@ -29,97 +29,106 @@ var PlotSvg = function () {
         var buildAxisDomain = function (arrayOfArrays, selector, expandDelta, displaySize) {
             // start by creating the base domain object, with the mapping from
             // compute space to display space, and empty ticks
-            var domain = Object.create(null);
-            domain.displaySize = displaySize;
-            domain.map = function (value) {
-                return this.displaySize * (value - this.min) / this.delta;
-            };
-            domain.ticks = [];
-
-            // a function to compute the order of magintude of a number, to use
-            // for scaling
-            var computeOrderOfMagnitude = function (number) {
-                number = Math.max(Math.abs(number), 1.0e-6);
-
-                // a big number, then a small number
-                var order = 0;
-                while (number > 10.0) {
-                    ++order;
-                    number /= 10.0;
+            var domain = {
+                "displaySize": displaySize,
+                "min": 0.0,
+                "delta":1.0,
+                "ticks": [],
+                "map": function (value) {
+                    return this.displaySize * (value - this.min) / this.delta;
                 }
-                while (number < 1) {
-                    --order;
-                    number *= 10.0;
-                }
-                return order;
             };
 
-            // functions to compute the range of the input array
-            var arrayFilter = function (array, filterFunc, selector) {
-                var result;
-                if (typeof (selector) === 'function') {
-                    result = selector(array[0]);
-                    for (var i = 1, count = array.length; i < count; ++i) {
-                        var test = selector(array[i]);
-                        result = filterFunc(result, test);
+            // make sure we can get some valid computations here
+            if ((arrayOfArrays.length > 0) && (arrayOfArrays[0].length > 0)) {
+                // a function to compute the order of magnitude of a number, to use
+                // for scaling
+                var computeOrderOfMagnitude = function (number) {
+                    number = Math.max(Math.abs(number), 1.0e-6);
+
+                    // a big number, then a small number
+                    var order = 0;
+                    while (number > 10.0) {
+                        ++order;
+                        number /= 10.0;
+                    }
+                    while (number < 1) {
+                        --order;
+                        number *= 10.0;
+                    }
+                    return order;
+                };
+
+                // functions to compute the range of the input array
+                var arrayFilter = function (array, filterFunc, selector) {
+                    var result;
+                    if (typeof (selector) === 'function') {
+                        result = selector(array[0]);
+                        for (var i = 1, count = array.length; i < count; ++i) {
+                            var test = selector(array[i]);
+                            result = filterFunc(result, test);
+                        }
+                    } else {
+                        result = array[0][selector];
+                        for (var i = 1, count = array.length; i < count; ++i) {
+                            var test = array[i][selector];
+                            result = filterFunc(result, test);
+                        }
+                    }
+                    return result;
+                };
+
+                // compute the ranges, then check that there *is* a range
+                var min = arrayFilter(arrayOfArrays, Math.min, function (array) { return arrayFilter(array, Math.min, selector); });
+                var max = arrayFilter(arrayOfArrays, Math.max, function (array) { return arrayFilter(array, Math.max, selector); });
+                var delta = max - min;
+                if (delta > 0) {
+                    // we might want to expand the delta range a little bit for display
+                    // purposes, just so lines don't rest right on an edge of the plot
+                    if (expandDelta) {
+                        // expand the range by 1%...
+                        var deltaDelta = delta * 0.01;
+                        if (max != 0) {
+                            max += deltaDelta;
+                        }
+                        if ((min != 0) && (min != 1)) {
+                            min -= deltaDelta;
+                        }
+                        delta = max - min;
+                    }
+
+                    var tickOrderOfMagnitude = computeOrderOfMagnitude(delta);
+                    var tryScale = [1.0, 2.0, 2.5, 5.0, 10.0, 20.0, 25.0];
+                    var tryPrecision = [1, 1, 2, 1, 1, 1, 2];
+                    var tickDivisorBase = Math.pow(10, tickOrderOfMagnitude - 1);
+                    var tickDivisorIndex = 0;
+                    var tickDivisor = tickDivisorBase * tryScale[tickDivisorIndex];
+                    while ((delta / tickDivisor) > 9) {
+                        tickDivisor = tickDivisorBase * tryScale[++tickDivisorIndex];
+                    }
+
+                    // now round the top and bottom to that divisor, and build the
+                    // domain object, starting with the basics
+                    domain.min = Math.floor(min / tickDivisor) * tickDivisor;
+                    domain.max = Math.ceil(max / tickDivisor) * tickDivisor;
+                    domain.delta = domain.max - domain.min;
+                    domain.orderOfMagnitude = computeOrderOfMagnitude(domain.max);
+
+                    // the numeric display precision
+                    domain.precision = tryPrecision[tickDivisorIndex];
+
+                    // the ticks
+                    var tickCount = Math.round((domain.max - domain.min) / tickDivisor);
+                    var incr = (domain.max - domain.min) / tickCount;
+                    for (var i = 0; i <= tickCount; ++i) {
+                        domain.ticks.push(domain.min + (i * incr));
                     }
                 } else {
-                    result = array[0][selector];
-                    for (var i = 1, count = array.length; i < count; ++i) {
-                        var test = array[i][selector];
-                        result = filterFunc(result, test);
-                    }
-                }
-                return result;
-            };
-
-            // compute the ranges...
-            var min = arrayFilter(arrayOfArrays, Math.min, function (array) { return arrayFilter(array, Math.min, selector); });
-            var max = arrayFilter(arrayOfArrays, Math.max, function (array) { return arrayFilter(array, Math.max, selector); });
-            var delta = max - min;
-            if (delta > 0) {
-                // we might want to expand the delta range a little bit for
-                // display purposes, just so lines don't rest right on an
-                // edge of the plot
-                if (expandDelta) {
-                    // expand the range by 1%...
-                    var deltaDelta = delta * 0.01;
-                    if (max != 0) {
-                        max += deltaDelta;
-                    }
-                    if ((min != 0) && (min != 1)) {
-                        min -= deltaDelta;
-                    }
-                    delta = max - min;
-                }
-
-                var tickOrderOfMagnitude = computeOrderOfMagnitude(delta);
-                var tryScale = [1.0, 2.0, 2.5, 5.0, 10.0, 20.0, 25.0];
-                var tryPrecision = [1, 1, 2, 1, 1, 1, 2];
-                var tickDivisorBase = Math.pow(10, tickOrderOfMagnitude - 1);
-                var tickDivisorIndex = 0;
-                var tickDivisor = tickDivisorBase * tryScale[tickDivisorIndex];
-                while ((delta / tickDivisor) > 9) {
-                    tickDivisor = tickDivisorBase * tryScale[++tickDivisorIndex];
-                }
-
-                // now round the top and bottom to that divisor, and build the
-                // domain object, starting with the basics
-                domain.min = Math.floor(min / tickDivisor) * tickDivisor;
-                domain.max = Math.ceil(max / tickDivisor) * tickDivisor;
-                domain.delta = domain.max - domain.min;
-                domain.orderOfMagnitude = computeOrderOfMagnitude(domain.max);
-
-                // the numeric display precision
-                domain.precision = tryPrecision[tickDivisorIndex];
-
-                // the ticks
-                var tickCount = Math.round((domain.max - domain.min) / tickDivisor);
-                var incr = (domain.max - domain.min) / tickCount;
-                for (var i = 0; i <= tickCount; ++i) {
-                    domain.ticks.push(domain.min + (i * incr));
+                    // put in something, since we have a base...
+                    domain.min = min;
                 }
             }
+
             return domain;
         };
 
@@ -212,16 +221,13 @@ var PlotSvg = function () {
         // make the plots
         var colors = ["blue", "red", "green", "orange", "purple"];
         for (var i = 0, count = conditionedPlotDataArray.length; i < count; ++i) {
+            svg += '<polyline fill="none" stroke="' + colors[i] + '" stroke-width="0.0075" points="';
             var plotData = conditionedPlotDataArray[i];
-            var plotCount = plotData.length;
-            if (plotCount > 1) {
-                svg += '<polyline fill="none" stroke="' + colors[i] + '" stroke-width="0.0075" points="';
-                for (var j = 0; j < plotCount; ++j) {
-                    var datum = domain.map(plotData[j]);
-                    svg += datum.x + ',' + datum.y + ' ';
-                }
-                svg += '" />';
+            for (var j = 0, jcount = plotData.length; j < jcount; ++j) {
+                var datum = domain.map(plotData[j]);
+                svg += datum.x + ',' + datum.y + ' ';
             }
+            svg += '" />';
         }
 
         // finish the plot
