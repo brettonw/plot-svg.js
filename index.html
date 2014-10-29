@@ -2,10 +2,10 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>Plot SVG Test</title>
-        <link rel="stylesheet" href="style.css" />
+        <title>plot-svg.js</title>
         <link rel="stylesheet" href="plot-svg.css" />
         <script src="plot-svg.js"></script>
+        <link rel="stylesheet" href="style.css" />
         <script type="text/javascript">
         function initPage() {
             // now evaluate the function
@@ -15,12 +15,17 @@
 			    plotData.push({ x: x, y: (x * x) });
 			    console.log("(" + x + ", " + (x * x) + ")");
 			}
-			var plotSvg = PlotSvg.singleLine("X * X", "X", "Y", plotData);
-			plotSvg = PlotSvg.wrap(plotSvg, 450, "display", "centered");
-			document.getElementById("body").innerHTML = plotSvg;
+			var svg = PlotSvg.singleLine("X * X", "X", "Y", plotData);
+			//plotSvg = PlotSvg.wrap(plotSvg, 450, "display", "centered");
+			document.getElementById("plot").innerHTML = svg;
         }
         </script> 
     </head>
     <body id="body" onload="initPage();">
+        <div id="title"><span style="font-family:sans-serif;font-size:24px;color:white;">plot-svg.js</span></div>
+        <div id="plot"></div>
+        <div id="footer">
+            <a href="https://github.com/brettonw/plot-svg.js" style="float:right;text-decoration:none;font-family:sans-serif;font-size:14px;color:white;">... on GitHub</a>
+        </div>
     </body>
 </html>

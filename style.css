@@ -1,13 +1,32 @@
-html, body {
-    background-color:   #ffffff;
+html {
+    width:              100%;
+    padding:            0px;
+}
+
+body {
+    background-color:   #304080;
     width:              100%;
     height:             100%;
     padding:            0px;
-    margin:             0px;
 }
 
-div.centered {
+div {
     margin-left:        auto;
     margin-right:       auto;
+    width:              600px;
+}
+
+div#title {
     margin-top:         20px;
 }
+
+div#plot {
+    margin-top:         5px;
+    height:             400px;
+    background-color:   #ff0000;
+}
+
+div#footer {
+    margin-top:         5px;
+}
+
