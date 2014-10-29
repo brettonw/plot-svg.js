@@ -134,8 +134,8 @@ var PlotSvg = function () {
 
         // compute the domain of the data
         return {
-            x: buildAxisDomain(plotDataArray, 'x', false, 1.5),
-            y: buildAxisDomain(plotDataArray, 'y', false, 1.0),
+            x: buildAxisDomain(plotDataArray, 'x', false, 600),
+            y: buildAxisDomain(plotDataArray, 'y', false, 400),
             map: function (xy) {
                 return {
                     x: this.x.map(xy.x),
@@ -147,13 +147,13 @@ var PlotSvg = function () {
 
     var startPlot = function (title, xAxis, yAxis, domain) {
         // create the raw SVG picture for display, assumes a width/height aspect ratio of 3/2
-        var buffer = 0.15;
+        var buffer = 0.15 * 400;
         var svg = '<div class="plot-svg-div">' +
                     '<svg class="plot-svg-svg" xmlns="http://www.w3.org/2000/svg" version="1.1" ' +
                     'viewBox="' + ((7.0 * -buffer) / 4.0) + ', ' + (-buffer) + ', ' + (domain.x.displaySize + (3.0 * buffer)) + ', ' + (domain.y.displaySize + (2.0 * buffer)) + '" ' +
                     'preserveAspectRatio="xMidYMid meet"' +
                     '>' +
-                    '<g transform="translate(0, 1), scale(1, -1)">';
+                    '<g transform="translate(0, 400), scale(1, -1)">';
 
         // format plot labels according to their order of magnitude and
         // desired precision
@@ -177,8 +177,8 @@ var PlotSvg = function () {
         for (var i = 0, count = domain.x.ticks.length; i < count; ++i) {
             var ti = domain.x.ticks[i];
             var tick = domain.x.map(ti);
-            svg += '<line x1="' + tick + '" y1="0" x2="' + tick + '" y2="' + top + '" stroke="#c0c0c0" stroke-width="0.005" />'
-            svg += '<text  x="' + tick + '" y="0.04" class="plot-svg-ticks" dominant-baseline="middle" text-anchor="middle" fill="#808080" transform="scale(1,-1)">' + labelText(ti, domain.x.orderOfMagnitude, domain.x.precision) + '</text>';
+            svg += '<line x1="' + tick + '" y1="0" x2="' + tick + '" y2="' + top + '" class="plot-svg-tick-line" />'
+            svg += '<text  x="' + tick + '" y="12.5" class="plot-svg-x-tick-label" transform="scale(1,-1)"><tspan dy="0.5em">' + labelText(ti, domain.x.orderOfMagnitude, domain.x.precision) + '</tspan></text>';
         }
 
         // draw the y ticks
@@ -187,23 +187,23 @@ var PlotSvg = function () {
         for (var i = 0, count = domain.y.ticks.length; i < count; ++i) {
             var ti = domain.y.ticks[i];
             var tick = domain.y.map(ti);
-            svg += '<line x1="0" y1="' + tick + '" x2="' + right + '" y2="' + tick + '" stroke="#c0c0c0" stroke-width="0.005" />'
-            svg += '<text  x="-0.02" y="' + -tick + '" class="plot-svg-ticks" dominant-baseline="middle" text-anchor="end" fill="#808080" transform="scale(1,-1)">' + labelText(ti, domain.y.orderOfMagnitude, domain.y.precision) + '</text>';
+            svg += '<line x1="0" y1="' + tick + '" x2="' + right + '" y2="' + tick + '" class="plot-svg-tick-line" />'
+            svg += '<text  x="-7.5" y="' + -tick + '" class="plot-svg-y-tick-label" transform="scale(1,-1)"><tspan dy="0.5em">' + labelText(ti, domain.y.orderOfMagnitude, domain.y.precision) + '</tspan></text>';
         }
 
         // draw the title
         if (title != null) {
-            svg += '<text  x="' + (right / 2.0) + '" y="' + -(top + 0.075) + '" font-size="0.075" font-family="sans-serif" dominant-baseline="middle" text-anchor="middle" fill="#404040" transform="scale(1,-1)">' + title + '</text>';
+            svg += '<text x="' + (right / 2.0) + '" y="' + -(top + 32.5) + '" class="plot-svg-title" transform="scale(1,-1)"><tspan dy="0.5em">' + title + '</tspan></text>';
         }
 
         // draw the x-axis label
         if (xAxis != null) {
-            svg += '<text  x="' + (right / 2.0) + '" y="0.1" font-size="0.05" font-family="sans-serif" dominant-baseline="middle" text-anchor="middle" fill="#404040" transform="scale(1,-1)">' + xAxis + '</text>';
+            svg += '<text x="' + (right / 2.0) + '" y="32.5" class="plot-svg-axis-label" transform="scale(1,-1)"><tspan dy="0.5em">' + xAxis + '</tspan></text>';
         }
 
         // draw the y-axis label
         if (yAxis != null) {
-            svg += '<text  x="' + (top / 2.0) + '" y="' + -(buffer + 0.025) + '" font-size="0.05" font-family="sans-serif" dominant-baseline="middle" text-anchor="middle" fill="#404040" transform="scale(1,-1), rotate(-90)">' + yAxis + '</text>';
+            svg += '<text x="' + (top / 2.0) + '" y="' + -(buffer + 20.0) + '" class="plot-svg-axis-label" transform="scale(1,-1), rotate(-90)"><tspan dy="0.5em">' + yAxis + '</tspan></text>';
         }
 
         return svg;
@@ -221,7 +221,7 @@ var PlotSvg = function () {
         // make the plots
         var colors = ["blue", "red", "green", "orange", "purple"];
         for (var i = 0, count = conditionedPlotDataArray.length; i < count; ++i) {
-            svg += '<polyline fill="none" stroke="' + colors[i] + '" stroke-width="0.0075" points="';
+            svg += '<polyline class="plot-svg-plot-line" stroke="' + colors[i] + '" points="';
             var plotData = conditionedPlotDataArray[i];
             for (var j = 0, jcount = plotData.length; j < jcount; ++j) {
                 var datum = domain.map(plotData[j]);
