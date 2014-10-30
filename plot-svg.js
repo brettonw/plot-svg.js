@@ -188,22 +188,22 @@ var PlotSvg = function () {
             var ti = domain.y.ticks[i];
             var tick = domain.y.map(ti);
             svg += '<line x1="0" y1="' + tick + '" x2="' + right + '" y2="' + tick + '" class="plot-svg-tick-line" />'
-            svg += '<text  x="-7.5" y="' + -tick + '" class="plot-svg-y-tick-label" transform="scale(1,-1)"><tspan dy="0.5em">' + labelText(ti, domain.y.orderOfMagnitude, domain.y.precision) + '</tspan></text>';
+            svg += '<text  x="-7.5" y="' + -tick + '" class="plot-svg-y-tick-label" transform="scale(1,-1)"><tspan dy="0.33em">' + labelText(ti, domain.y.orderOfMagnitude, domain.y.precision) + '</tspan></text>';
         }
 
         // draw the title
         if (title != null) {
-            svg += '<text x="' + (right / 2.0) + '" y="' + -(top + 32.5) + '" class="plot-svg-title" transform="scale(1,-1)"><tspan dy="0.5em">' + title + '</tspan></text>';
+            svg += '<text x="' + (right / 2.0) + '" y="' + -(top + 30.0) + '" class="plot-svg-title" transform="scale(1,-1)"><tspan dy="0.33em">' + title + '</tspan></text>';
         }
 
         // draw the x-axis label
         if (xAxis != null) {
-            svg += '<text x="' + (right / 2.0) + '" y="32.5" class="plot-svg-axis-label" transform="scale(1,-1)"><tspan dy="0.5em">' + xAxis + '</tspan></text>';
+            svg += '<text x="' + (right / 2.0) + '" y="37.5" class="plot-svg-axis-label" transform="scale(1,-1)"><tspan dy="0.33em">' + xAxis + '</tspan></text>';
         }
 
         // draw the y-axis label
         if (yAxis != null) {
-            svg += '<text x="' + (top / 2.0) + '" y="' + -(buffer + 20.0) + '" class="plot-svg-axis-label" transform="scale(1,-1), rotate(-90)"><tspan dy="0.5em">' + yAxis + '</tspan></text>';
+            svg += '<text x="' + (top / 2.0) + '" y="' + -(buffer + 20.0) + '" class="plot-svg-axis-label" transform="scale(1,-1), rotate(-90)"><tspan dy="0.33em">' + yAxis + '</tspan></text>';
         }
 
         return svg;
