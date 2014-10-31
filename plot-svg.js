@@ -48,13 +48,11 @@ var PlotSvg = function () {
 
                     // a big number, then a small number
                     var order = 0;
-                    while (number > 10.0) {
-                        ++order;
-                        number /= 10.0;
+                    while (number >= 10.0) {
+                        ++order; number /= 10.0;
                     }
                     while (number < 1) {
-                        --order;
-                        number *= 10.0;
+                        --order; number *= 10.0;
                     }
                     return order;
                 };
@@ -82,50 +80,50 @@ var PlotSvg = function () {
                 var min = arrayFilter(arrayOfArrays, Math.min, function (array) { return arrayFilter(array, Math.min, selector); });
                 var max = arrayFilter(arrayOfArrays, Math.max, function (array) { return arrayFilter(array, Math.max, selector); });
                 var delta = max - min;
-                if (delta > 0) {
-                    // we might want to expand the delta range a little bit for display
-                    // purposes, just so lines don't rest right on an edge of the plot
-                    if (expandDelta) {
-                        // expand the range by 1%...
-                        var deltaDelta = delta * 0.01;
-                        if (max != 0) {
-                            max += deltaDelta;
-                        }
-                        if ((min != 0) && (min != 1)) {
-                            min -= deltaDelta;
-                        }
-                        delta = max - min;
+                if (delta == 0) {
+                    max = min + 1.0;
+                    delta = 1.0;
+                }
+
+                // we might want to expand the delta range a little bit for display
+                // purposes, just so lines don't rest right on an edge of the plot
+                if (expandDelta) {
+                    // expand the range by 1%...
+                    var deltaDelta = delta * 0.01;
+                    if (max != 0) {
+                        max += deltaDelta;
                     }
-
-                    var tickOrderOfMagnitude = computeOrderOfMagnitude(delta);
-                    var tryScale = [1.0, 2.0, 2.5, 5.0, 10.0, 20.0, 25.0];
-                    var tryPrecision = [1, 1, 2, 1, 1, 1, 2];
-                    var tickDivisorBase = Math.pow(10, tickOrderOfMagnitude - 1);
-                    var tickDivisorIndex = 0;
-                    var tickDivisor = tickDivisorBase * tryScale[tickDivisorIndex];
-                    while ((delta / tickDivisor) > 9) {
-                        tickDivisor = tickDivisorBase * tryScale[++tickDivisorIndex];
+                    if ((min != 0) && (min != 1)) {
+                        min -= deltaDelta;
                     }
+                    delta = max - min;
+                }
 
-                    // now round the top and bottom to that divisor, and build the
-                    // domain object, starting with the basics
-                    domain.min = Math.floor(min / tickDivisor) * tickDivisor;
-                    domain.max = Math.ceil(max / tickDivisor) * tickDivisor;
-                    domain.delta = domain.max - domain.min;
-                    domain.orderOfMagnitude = computeOrderOfMagnitude(domain.max);
+                var tickOrderOfMagnitude = computeOrderOfMagnitude(delta);
+                var tryScale = [1.0, 2.0, 2.5, 5.0, 10.0, 20.0, 25.0];
+                var tryPrecision = [1, 1, 2, 1, 1, 1, 2];
+                var tickDivisorBase = Math.pow(10, tickOrderOfMagnitude - 1);
+                var tickDivisorIndex = 0;
+                var tickDivisor = tickDivisorBase * tryScale[tickDivisorIndex];
+                while ((delta / tickDivisor) > 9) {
+                    tickDivisor = tickDivisorBase * tryScale[++tickDivisorIndex];
+                }
 
-                    // the numeric display precision
-                    domain.precision = tryPrecision[tickDivisorIndex];
+                // now round the top and bottom to that divisor, and build the
+                // domain object, starting with the basics
+                domain.min = Math.floor(min / tickDivisor) * tickDivisor;
+                domain.max = Math.ceil(max / tickDivisor) * tickDivisor;
+                domain.delta = domain.max - domain.min;
+                domain.orderOfMagnitude = computeOrderOfMagnitude(domain.max);
 
-                    // the ticks
-                    var tickCount = Math.round((domain.max - domain.min) / tickDivisor);
-                    var incr = (domain.max - domain.min) / tickCount;
-                    for (var i = 0; i <= tickCount; ++i) {
-                        domain.ticks.push(domain.min + (i * incr));
-                    }
-                } else {
-                    // put in something, since we have a base...
-                    domain.min = min;
+                // the numeric display precision
+                domain.precision = tryPrecision[tickDivisorIndex];
+
+                // the ticks
+                var tickCount = Math.round((domain.max - domain.min) / tickDivisor);
+                var incr = (domain.max - domain.min) / tickCount;
+                for (var i = 0; i <= tickCount; ++i) {
+                    domain.ticks.push(domain.min + (i * incr));
                 }
             }
 
