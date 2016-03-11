@@ -99,6 +99,7 @@ var PlotSvg = function () {
                     delta = max - min;
                 }
 
+                // compute the drawing scale, and the placement for tick divisor
                 var tickOrderOfMagnitude = computeOrderOfMagnitude(delta);
                 var tryScale = [1.0, 2.0, 2.5, 5.0, 10.0, 20.0, 25.0];
                 var tryPrecision = [1, 1, 2, 1, 1, 1, 2];
