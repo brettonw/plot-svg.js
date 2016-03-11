@@ -7,7 +7,7 @@ var PlotSvg = function () {
         // information because that puts them in sub-sub-pixel range for almost
         // all rendering cases, we copy the data in the array, rounded to the
         // needed degree of precision
-        var targetPlotDataPrecision = 4;
+        var targetPlotDataPrecision = 5;
         var plotDataArrayCount = plotDataArray.length;
         var newPlotDataArray = new Array(plotDataArrayCount);
         for (var i = 0; i < plotDataArrayCount; ++i) {
