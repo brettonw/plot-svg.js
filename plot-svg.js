@@ -1,21 +1,3 @@
-/*
- * SBIR DATA RIGHTS
- *
- * Contract FA9453-14-C-0165
- * Contractor Name: Applied Defense Solutions, Inc.
- * Contract Address: 10440 Little Patuxent Pkwy, STE 600, Columbia, MD 21044
- * Expiration of SBIR Data Rights Period: 22 July 2021
- *
- * SBIR DATA RIGHTS - The Government's rights to use, modify, reproduce, release,
- * perform, display, or disclose technical data or computer software marked with
- * this legend are restricted during the period shown as provided in paragraph
- * (b)(4) of the Rights in Noncommercial Technical Data and Computer Software-
- * Small Business Innovative Research (SBIR) Program clause contained in the
- * above identified contract. No restrictions apply after the expiration date
- * shown above. Any reproduction of technical data, computer software, or
- * portions thereof marked with this legend must also reproduce the markings.
- */
-
 var PlotSvg = function () {
     var ps = Object.create(null);
 
