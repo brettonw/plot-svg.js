@@ -64,6 +64,7 @@
 .plot-svg-plot-point {
     stroke:black;
     stroke-width: 1.0px;
+    r:4;
 }
 
 .plot-svg-plot-legend {

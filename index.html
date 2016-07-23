@@ -9,13 +9,24 @@
         <script type="text/javascript">
         function initPage() {
             // now evaluate the function
+            var plotDataArray = [];
+
 			var plotData = [];
 			for (var x = -100.0; x <= 102.5; x += 5.0) {
 			    x = new Number (x.toPrecision(6));
 			    plotData.push({ x: x, y: (x * x) });
-			    console.log("(" + x + ", " + (x * x) + ")");
+			    //console.log("(" + x + ", " + (x * x) + ")");
 			}
-			var svg = PlotSvg.singleLine("X * X", "X", "Y", plotData);
+			plotDataArray.push (plotData);
+
+            var plotData2 = [];
+            for (var i = 0, end = plotData.length; i < end; ++i) {
+                var p = plotData[i];
+                plotData2.push({ x: p.x, y: 1.0e4 - p.y });
+            }
+            plotDataArray.push (plotData2);
+
+			var svg = PlotSvg.multipleLine("X * X", "X", "Y", plotDataArray, ["X*X", "1.0e4-(X*X)"]);
 			//plotSvg = PlotSvg.wrap(plotSvg, 450, "display", "centered");
 			document.getElementById("plot").innerHTML = svg;
         }

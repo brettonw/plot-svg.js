@@ -1,5 +1,30 @@
+/*
+PlotSvg is a Javascript module for plotting simple 2D graphs from set of {x, y} points. Styling is
+perfomed using CSS.
+ */
 var PlotSvg = function () {
-    var ps = Object.create(null);
+    var _ = Object.create(null);
+
+    // some styling values
+    var plotLines = true;
+    var plotPoints = true;
+
+    _.setPlotLines = function (shouldPlotLines) {
+        plotLines = shouldPlotLines;
+        return this;
+    }
+
+    _.setPlotPoints = function (shouldPlotPoints) {
+        plotPoints = shouldPlotPoints;
+        return this;
+    }
+
+    colors = ["rgb(114,147,203)", "rgb(225,151,76)", "rgb(132,186,91)", "rgb(211,94,96)", "rgb(144,103,167)"];
+
+    _.setColors = function (colorsArray) {
+        colors = colorsArray;
+        return this;
+    }
 
     var conditionPlotDataArray = function (plotDataArray) {
         // condition the input arrays, there's really no reason to treat any
@@ -217,53 +242,60 @@ var PlotSvg = function () {
         return svg;
     };
 
+    var plotLegend = function (svg, legend) {
+        // add a legend
+        var legendSize = 24;
+        var legendBuffer = 6;
+        var height = ((legendSize + legendBuffer) * legend.length) + legendBuffer;
+        var x = 440;
+        var y = 240 - (height / 2);
+        svg += '<rect class="plot-svg-plot-legend" x="' + x +'" y="' + y + '" height="' + height + '" />';
+        for (var i = 0, count = legend.length; i < count; ++i) {
+            var xx = x + legendBuffer;
+            var yy = (y + legendBuffer) + (i * (legendSize + legendBuffer));
+            svg += '<rect class="plot-svg-plot-legend-box" x="' + xx + '" y="' + yy + '" fill="' + colors[i % colors.length] + '" width="' + legendSize + '" height="' + legendSize + '"  />';
+            xx += legendSize + legendBuffer;
+            yy += legendBuffer;
+            svg += '<text class="plot-svg-plot-legend-label" x="' + xx + '" y="-' + yy + '" transform="scale(1,-1)">' + legend[i] + '</text>';
+        }
+        return svg;
+    };
+
     var finishPlot = function (svg) {
         return svg + "</svg></div><br>";
     };
 
-    ps.multipleLine = function (title, xAxis, yAxis, plotDataArray, legend) {
+    _.multipleLine = function (title, xAxis, yAxis, plotDataArray, legend) {
         var conditionedPlotDataArray = conditionPlotDataArray(plotDataArray);
         var domain = buildDomain(conditionedPlotDataArray);
         var svg = startPlot(title, xAxis, yAxis, domain);
 
-        var colors = ["blue", "red", "green", "orange", "purple", "cyan", "pink", "royalblue", "salmon"];
-
-        // add a legend
-        var legendSize = 24;
-        var legendBuffer = 6;
-        if (legend.length > 0) {
-            var height = ((legendSize + legendBuffer) * legend.length) + legendBuffer;
-            var x = 440;
-            var y = 240 - (height / 2);
-            svg += '<rect class="plot-svg-plot-legend" x="' + x +'" y="' + y + '" height="' + height + '" />';
-            for (var i = 0, count = legend.length; i < count; ++i) {
-                var xx = x + legendBuffer;
-                var yy = (y + legendBuffer) + (i * (legendSize + legendBuffer));
-                svg += '<rect class="plot-svg-plot-legend-box" x="' + xx + '" y="' + yy + '" fill="' + colors[i % colors.length] + '" width="' + legendSize + '" height="' + legendSize + '"  />';
-                xx += legendSize + legendBuffer;
-                yy += legendBuffer;
-                svg += '<text class="plot-svg-plot-legend-label" x="' + xx + '" y="-' + yy + '" transform="scale(1,-1)">' + legend[i] + '</text>';
-            }
-        }
-
         // make the plots
         for (var i = 0, count = conditionedPlotDataArray.length; i < count; ++i) {
-            svg += '<polyline class="plot-svg-plot-line" stroke="' + colors[i % colors.length] + '" points="';
-            var plotData = conditionedPlotDataArray[i];
-            for (var j = 0, jcount = plotData.length; j < jcount; ++j) {
-                var datum = domain.map(plotData[j]);
-                svg += datum.x + ',' + datum.y + ' ';
+            // plot the lines
+            if (plotLines) {
+                svg += '<polyline class="plot-svg-plot-line" stroke="' + colors[i % colors.length] + '" points="';
+                var plotData = conditionedPlotDataArray[i];
+                for (var j = 0, jcount = plotData.length; j < jcount; ++j) {
+                    var datum = domain.map(plotData[j]);
+                    svg += datum.x + ',' + datum.y + ' ';
+                }
+                svg += '" />';
             }
-            svg += '" />';
+
+            // plot the points
+            if (plotPoints) {
+                // put down the points
+                var plotData = conditionedPlotDataArray[i];
+                for (var j = 0, jcount = plotData.length; j < jcount; ++j) {
+                    var datum = domain.map(plotData[j]);
+                    svg += '<circle class="plot-svg-plot-point" fill="' + colors[i % colors.length] + '" cx="' + datum.x + '" cy="' + datum.y + '"><title>' + plotData[j].x + ', ' + plotData[j].y + '</title></circle>';
+                }
+            }
         }
 
-        // put down the points
-        for (var i = 0, count = conditionedPlotDataArray.length; i < count; ++i) {
-            var plotData = conditionedPlotDataArray[i];
-            for (var j = 0, jcount = plotData.length; j < jcount; ++j) {
-                var datum = domain.map(plotData[j]);
-                svg += '<circle class="plot-svg-plot-point" r="4" fill="' + colors[i % colors.length] + '" cx="' + datum.x + '" cy="' + datum.y + '"><title>' + plotData[j].x + ', ' + plotData[j].y + '</title></circle>';
-            }
+        if ((legend !== undefined) && (legend.length > 0)) {
+            svg = plotLegend(svg, legend);
         }
 
         // finish the plot
@@ -271,21 +303,21 @@ var PlotSvg = function () {
         return svg;
     };
 
-    ps.singleLine = function (title, xAxis, yAxis, plotData, legend) {
-        return this.multipleLine(title, xAxis, yAxis, [plotData], []);
+    _.singleLine = function (title, xAxis, yAxis, plotData, legend) {
+        return this.multipleLine(title, xAxis, yAxis, [plotData]);
     };
 
-    ps.scatter = function (title, xAxis, yAxis, plotData) {
+    _.scatter = function (title, xAxis, yAxis, plotData) {
         var conditionedPlotDataArray = conditionPlotDataArray([plotData]);
         var domain = buildDomain(conditionedPlotDataArray);
         var svg = startPlot(title, xAxis, yAxis, domain);
 
-        // put down the points
+        // put down the points (this ignores the plotPoints and plotLines settings)
         for (var i = 0, count = conditionedPlotDataArray.length; i < count; ++i) {
             var plotData = conditionedPlotDataArray[i];
             for (var j = 0, jcount = plotData.length; j < jcount; ++j) {
                 var datum = domain.map(plotData[j]);
-                svg += '<circle class="plot-svg-plot-point" r="4" fill="' + colors[i % colors.length] + '" cx="' + datum.x + '" cy="' + datum.y + '"><title>' + plotData[j].x + ', ' + plotData[j].y + '</title></circle>';
+                svg += '<circle class="plot-svg-plot-point" fill="' + colors[i % colors.length] + '" cx="' + datum.x + '" cy="' + datum.y + '"><title>' + plotData[j].x + ', ' + plotData[j].y + '</title></circle>';
             }
         }
 
@@ -294,7 +326,7 @@ var PlotSvg = function () {
         return svg;
     };
 
-    ps.wrap = function (svg, width, divId, cssClass) {
+    _.wrap = function (svg, width, divId, cssClass) {
         var height = (2 * width) / 3;
         var result = '<div ';
         if (divId != null) {
@@ -308,5 +340,5 @@ var PlotSvg = function () {
         return result;
     };
 
-    return ps;
+    return _;
 }();
