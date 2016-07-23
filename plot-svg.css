@@ -61,3 +61,27 @@
     stroke-width:       2.0px;
 }
 
+.plot-svg-plot-point {
+    stroke:black;
+    stroke-width: 1.0px;
+}
+
+.plot-svg-plot-legend {
+    stroke:black;
+    fill:floralwhite;
+    stroke-width: 2.0px;
+    width:200px;
+    fill-opacity: 0.5;
+}
+
+.plot-svg-plot-legend-box {
+    stroke:black;
+    stroke-width: 1.0px;
+}
+
+.plot-svg-plot-legend-label {
+    font-size: 16px;
+    font-family: sans-serif;
+    fill: black;
+}
+

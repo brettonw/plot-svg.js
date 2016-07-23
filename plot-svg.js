@@ -1,3 +1,21 @@
+/*
+ * SBIR DATA RIGHTS
+ *
+ * Contract FA9453-14-C-0165
+ * Contractor Name: Applied Defense Solutions, Inc.
+ * Contract Address: 10440 Little Patuxent Pkwy, STE 600, Columbia, MD 21044
+ * Expiration of SBIR Data Rights Period: 22 July 2021
+ *
+ * SBIR DATA RIGHTS - The Government's rights to use, modify, reproduce, release,
+ * perform, display, or disclose technical data or computer software marked with
+ * this legend are restricted during the period shown as provided in paragraph
+ * (b)(4) of the Rights in Noncommercial Technical Data and Computer Software-
+ * Small Business Innovative Research (SBIR) Program clause contained in the
+ * above identified contract. No restrictions apply after the expiration date
+ * shown above. Any reproduction of technical data, computer software, or
+ * portions thereof marked with this legend must also reproduce the markings.
+ */
+
 var PlotSvg = function () {
     var ps = Object.create(null);
 
@@ -16,7 +34,10 @@ var PlotSvg = function () {
             var newPlotData = new Array(plotDataCount);
             for (var j = 0; j < plotDataCount; ++j) {
                 var plotDatum = plotData[j];
-                newPlotData[j] = { x: new Number(plotDatum.x.toPrecision(targetPlotDataPrecision)), y: new Number(plotDatum.y.toPrecision(targetPlotDataPrecision)) };
+                newPlotData[j] = {
+                    x: new Number(plotDatum.x.toPrecision(targetPlotDataPrecision)),
+                    y: new Number(plotDatum.y.toPrecision(targetPlotDataPrecision))
+                };
             }
             newPlotDataArray[i] = newPlotData;
         }
@@ -32,7 +53,7 @@ var PlotSvg = function () {
             var domain = {
                 "displaySize": displaySize,
                 "min": 0.0,
-                "delta":1.0,
+                "delta": 1.0,
                 "ticks": [],
                 "map": function (value) {
                     return this.displaySize * (value - this.min) / this.delta;
@@ -49,10 +70,12 @@ var PlotSvg = function () {
                     // a big number, then a small number
                     var order = 0;
                     while (number >= 10.0) {
-                        ++order; number /= 10.0;
+                        ++order;
+                        number /= 10.0;
                     }
                     while (number < 1) {
-                        --order; number *= 10.0;
+                        --order;
+                        number *= 10.0;
                     }
                     return order;
                 };
@@ -77,8 +100,12 @@ var PlotSvg = function () {
                 };
 
                 // compute the ranges, then check that there *is* a range
-                var min = arrayFilter(arrayOfArrays, Math.min, function (array) { return arrayFilter(array, Math.min, selector); });
-                var max = arrayFilter(arrayOfArrays, Math.max, function (array) { return arrayFilter(array, Math.max, selector); });
+                var min = arrayFilter(arrayOfArrays, Math.min, function (array) {
+                    return arrayFilter(array, Math.min, selector);
+                });
+                var max = arrayFilter(arrayOfArrays, Math.max, function (array) {
+                    return arrayFilter(array, Math.max, selector);
+                });
                 var delta = max - min;
                 if (delta == 0) {
                     max = min + 1.0;
@@ -148,20 +175,20 @@ var PlotSvg = function () {
         // create the raw SVG picture for display, assumes a width/height aspect ratio of 3/2
         var buffer = 0.15 * 400;
         var svg = '<div class="plot-svg-div">' +
-                    '<svg class="plot-svg-svg" xmlns="http://www.w3.org/2000/svg" version="1.1" ' +
-                    'viewBox="' + ((7.0 * -buffer) / 4.0) + ', ' + (-buffer) + ', ' + (domain.x.displaySize + (3.0 * buffer)) + ', ' + (domain.y.displaySize + (2.0 * buffer)) + '" ' +
-                    'preserveAspectRatio="xMidYMid meet"' +
-                    '>' +
-                    '<g transform="translate(0, 400), scale(1, -1)">';
+            '<svg class="plot-svg-svg" xmlns="http://www.w3.org/2000/svg" version="1.1" ' +
+            'viewBox="' + ((7.0 * -buffer) / 4.0) + ', ' + (-buffer) + ', ' + (domain.x.displaySize + (3.0 * buffer)) + ', ' + (domain.y.displaySize + (2.0 * buffer)) + '" ' +
+            'preserveAspectRatio="xMidYMid meet"' +
+            '>' +
+            '<g transform="translate(0, 400), scale(1, -1)">';
 
         // format plot labels according to their order of magnitude and
         // desired precision
         var labelText = function (number, order, precision) {
             var divisor = Math.pow(10, order);
             var value = number / divisor;
-            if (Math.abs (order) <= 3) {
+            if (Math.abs(order) <= 3) {
                 value *= Math.pow(10, order);
-                precision = Math.max (0, precision - order);
+                precision = Math.max(0, precision - order);
                 order = 0;
             }
             if (value != 0) {
@@ -212,15 +239,34 @@ var PlotSvg = function () {
         return svg + "</svg></div><br>";
     };
 
-    ps.multipleLine = function (title, xAxis, yAxis, plotDataArray) {
+    ps.multipleLine = function (title, xAxis, yAxis, plotDataArray, legend) {
         var conditionedPlotDataArray = conditionPlotDataArray(plotDataArray);
         var domain = buildDomain(conditionedPlotDataArray);
         var svg = startPlot(title, xAxis, yAxis, domain);
 
+        var colors = ["blue", "red", "green", "orange", "purple", "cyan", "pink", "royalblue", "salmon"];
+
+        // add a legend
+        var legendSize = 24;
+        var legendBuffer = 6;
+        if (legend.length > 0) {
+            var height = ((legendSize + legendBuffer) * legend.length) + legendBuffer;
+            var x = 440;
+            var y = 240 - (height / 2);
+            svg += '<rect class="plot-svg-plot-legend" x="' + x +'" y="' + y + '" height="' + height + '" />';
+            for (var i = 0, count = legend.length; i < count; ++i) {
+                var xx = x + legendBuffer;
+                var yy = (y + legendBuffer) + (i * (legendSize + legendBuffer));
+                svg += '<rect class="plot-svg-plot-legend-box" x="' + xx + '" y="' + yy + '" fill="' + colors[i % colors.length] + '" width="' + legendSize + '" height="' + legendSize + '"  />';
+                xx += legendSize + legendBuffer;
+                yy += legendBuffer;
+                svg += '<text class="plot-svg-plot-legend-label" x="' + xx + '" y="-' + yy + '" transform="scale(1,-1)">' + legend[i] + '</text>';
+            }
+        }
+
         // make the plots
-        var colors = ["blue", "red", "green", "orange", "purple"];
         for (var i = 0, count = conditionedPlotDataArray.length; i < count; ++i) {
-            svg += '<polyline class="plot-svg-plot-line" stroke="' + colors[i] + '" points="';
+            svg += '<polyline class="plot-svg-plot-line" stroke="' + colors[i % colors.length] + '" points="';
             var plotData = conditionedPlotDataArray[i];
             for (var j = 0, jcount = plotData.length; j < jcount; ++j) {
                 var datum = domain.map(plotData[j]);
@@ -229,13 +275,22 @@ var PlotSvg = function () {
             svg += '" />';
         }
 
+        // put down the points
+        for (var i = 0, count = conditionedPlotDataArray.length; i < count; ++i) {
+            var plotData = conditionedPlotDataArray[i];
+            for (var j = 0, jcount = plotData.length; j < jcount; ++j) {
+                var datum = domain.map(plotData[j]);
+                svg += '<circle class="plot-svg-plot-point" r="4" fill="' + colors[i % colors.length] + '" cx="' + datum.x + '" cy="' + datum.y + '"><title>' + plotData[j].x + ', ' + plotData[j].y + '</title></circle>';
+            }
+        }
+
         // finish the plot
         var svg = finishPlot(svg);
         return svg;
     };
 
-    ps.singleLine = function (title, xAxis, yAxis, plotData) {
-        return this.multipleLine(title, xAxis, yAxis, [plotData]);
+    ps.singleLine = function (title, xAxis, yAxis, plotData, legend) {
+        return this.multipleLine(title, xAxis, yAxis, [plotData], []);
     };
 
     ps.scatter = function (title, xAxis, yAxis, plotData) {
@@ -243,17 +298,14 @@ var PlotSvg = function () {
         var domain = buildDomain(conditionedPlotDataArray);
         var svg = startPlot(title, xAxis, yAxis, domain);
 
-        // make the plot
-        /*
-        var colors = ["blue"];
-            svg += '<polyline fill="none" stroke="' + colors[i] + '" stroke-width="0.0075" points="';
+        // put down the points
+        for (var i = 0, count = conditionedPlotDataArray.length; i < count; ++i) {
             var plotData = conditionedPlotDataArray[i];
             for (var j = 0, jcount = plotData.length; j < jcount; ++j) {
                 var datum = domain.map(plotData[j]);
-                svg += datum.x + ',' + datum.y + ' ';
+                svg += '<circle class="plot-svg-plot-point" r="4" fill="' + colors[i % colors.length] + '" cx="' + datum.x + '" cy="' + datum.y + '"><title>' + plotData[j].x + ', ' + plotData[j].y + '</title></circle>';
             }
-            svg += '" />';
-            */
+        }
 
         // finish the plot
         var svg = finishPlot(svg);
@@ -275,4 +327,4 @@ var PlotSvg = function () {
     };
 
     return ps;
-} ();
+}();
