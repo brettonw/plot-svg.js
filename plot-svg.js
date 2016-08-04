@@ -5,6 +5,9 @@ perfomed using CSS.
 var PlotSvg = function () {
     var _ = Object.create(null);
 
+    var plotWidth = 600;
+    var plotHeight = 400;
+
     // some styling values
     var plotLines = true;
     var plotPoints = true;
@@ -166,8 +169,8 @@ var PlotSvg = function () {
 
         // compute the domain of the data
         return {
-            x: buildAxisDomain(plotDataArray, 'x', false, 600),
-            y: buildAxisDomain(plotDataArray, 'y', false, 400),
+            x: buildAxisDomain(plotDataArray, 'x', false, plotWidth),
+            y: buildAxisDomain(plotDataArray, 'y', false, plotHeight),
             map: function (xy) {
                 return {
                     x: this.x.map(xy.x),
@@ -185,7 +188,7 @@ var PlotSvg = function () {
             '<svg class="plot-svg-svg" xmlns="http://www.w3.org/2000/svg" version="1.1" ' +
             'viewBox="' + ((7.0 * -buffer) / 4.0) + ', ' + (-buffer) + ', ' + (domain.x.displaySize + (3.0 * buffer)) + ', ' + (domain.y.displaySize + (2.0 * buffer)) + '" ' +
             'preserveAspectRatio="xMidYMid meet"' +
-            ' onmousedown="PlotSvg.startDrag(event)" onmouseup="PlotSvg.endDrag(event)" onmousemove="PlotSvg.drag(event)" onmousewheel="PlotSvg.wheel(event)"' +
+            ' onmousedown="PlotSvg.startDrag(event)" onmouseup="PlotSvg.endDrag(event)" onmousemove="PlotSvg.drag(event)" onmousewheel="PlotSvg.wheel(event)" ondblclick="PlotSvg.dblClick(event)"' +
             '>' +
             '<g transform="translate(0, 400), scale(1, -1)">' +
             '<g id="pan/zoom" transform="translate(0, 0), scale(1)" panscale="' + ((domain.x.displaySize + (3.0 * buffer)) / domain.x.displaySize) + '" style="pointer-events:none;">';
@@ -370,14 +373,43 @@ var PlotSvg = function () {
         return result;
     };
 
+    var debug = function (panZoomNode) {
+        var baseVal = panZoomNode.transform.baseVal;
+        var translateMatrix = baseVal.getItem (0).matrix;
+        var translate = { x: translateMatrix.e, y : translateMatrix.f };
+        var scale = baseVal.getItem (1).matrix.a.toPrecision(3);
+        var output = "Tx (" + translate.x.toPrecision(3) + ", " + translate.y.toPrecision(3) + "), Sc (" + scale + ")";
+        var debugDiv = document.getElementById("debug");
+        debugDiv.innerHTML = output;
+    }
+
+    var constrain = function (panZoomNode) {
+        // viewbox -105,-60,780,520, vs 600x400
+        var baseVal = panZoomNode.transform.baseVal;
+        var translateMatrix = baseVal.getItem (0).matrix;
+        var scale = (baseVal.getItem (1).matrix.a) - 1.0;
+
+        var minX = -780 * scale;
+        var maxX = 105 * scale;
+        if (translateMatrix.e < minX) { translateMatrix.e = minX; }
+        if (translateMatrix.e > maxX) { translateMatrix.e = maxX; }
+
+        var minY = -520 * scale;
+        var maxY = 60 * scale;
+        if (translateMatrix.f < minY) { translateMatrix.f = minY; }
+        if (translateMatrix.f > maxY) { translateMatrix.f = maxY; }
+
+
+    }
+
     _.startDrag = function (event) {
         var panZoomNode = event.currentTarget.getElementById("pan/zoom");
         var plotSvgDragData = panZoomNode.plotSvgDragData = {};
-        plotSvgDragData.isDragging = true;
         var transform = panZoomNode.transform.baseVal.getItem (0).matrix;
         plotSvgDragData.lastTranslate = { x: transform.e, y: transform.f};
-        plotSvgDragData.startPt = { x: event.clientX, y: event.clientY };
+        plotSvgDragData.startPt = { x: event.offsetX, y: event.offsetY };
         plotSvgDragData.panScale = panZoomNode.attributes.panscale.value;
+        debug (panZoomNode);
     };
 
     _.endDrag = function (event){
@@ -390,12 +422,14 @@ var PlotSvg = function () {
         if (panZoomNode.hasOwnProperty ("plotSvgDragData")) {
             var plotSvgDragData = panZoomNode.plotSvgDragData;
             var startPt = plotSvgDragData.startPt;
-            var delta = { x:event.clientX - startPt.x, y:event.clientY - startPt.y };
+            var delta = { x:event.offsetX - startPt.x, y:event.offsetY - startPt.y };
             var transform = panZoomNode.transform.baseVal.getItem (0).matrix;
             var lastTranslate = plotSvgDragData.lastTranslate;
             var panScale = plotSvgDragData.panScale;
             transform.e = lastTranslate.x + (delta.x * panScale);
             transform.f = lastTranslate.y - (delta.y * panScale);
+            constrain (panZoomNode);
+            debug (panZoomNode);
         }
     };
 
@@ -425,6 +459,19 @@ var PlotSvg = function () {
             plotSvgZoomData.zoomTableIndex = Math.min (plotSvgZoomData.zoomTableIndex + 1, zoomTable.length - 1);
         }
         transform.a = transform.d = zoomTable[plotSvgZoomData.zoomTableIndex];
+        constrain (panZoomNode);
+        debug (panZoomNode);
+    };
+
+    _.dblClick = function (event) {
+        // reset
+        var panZoomNode = event.currentTarget.getElementById("pan/zoom");
+        var baseVal = panZoomNode.transform.baseVal;
+        var translateMatrix = baseVal.getItem (0).matrix;
+        translateMatrix.e = translateMatrix.f = 0;
+        var scaleMatrix = baseVal.getItem (1).matrix;
+        scaleMatrix.a = scaleMatrix.d = 1;
+        debug (panZoomNode);
     };
 
     return _;
