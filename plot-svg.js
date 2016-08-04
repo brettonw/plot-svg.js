@@ -462,11 +462,17 @@ var PlotSvg = function () {
             plotSvgZoomData.zoomTableIndex = Math.min (plotSvgZoomData.zoomTableIndex + 1, zoomTable.length - 1);
         }
         var scale = zoomTable[plotSvgZoomData.zoomTableIndex];
+        var scale_minus_1 = scale - 1.0;
+
+        // the existing matrix transformation values represent a certain offset in x from a previous
+        // zoom operation
+
 
         var panScale = panZoomNode.attributes.panscale.value;
         var x = (event.offsetX * panScale) - 105;
         var y = plotHeight - ((event.offsetY * panScale) - 60);
 
+        /*
         console.log ("-----");
         console.log ("event.offsetY: " + event.offsetY);
         console.log ("panscale: " + panScale);
@@ -474,9 +480,10 @@ var PlotSvg = function () {
         console.log ("y: " + y);
         //y = y / plotHeight;
         console.log ("y (final): " + y);
+*/
 
-        translateMatrix.e = -x * (scale - 1);
-        translateMatrix.f = -y * (scale - 1);
+        translateMatrix.e = -x * scale_minus_1;
+        translateMatrix.f = -y * scale_minus_1;
         scaleMatrix.a = scaleMatrix.d = scale;
         constrain (panZoomNode);
         debug (panZoomNode);
