@@ -15,19 +15,19 @@ var PlotSvg = function () {
     _.setPlotLines = function (shouldPlotLines) {
         plotLines = shouldPlotLines;
         return this;
-    }
+    };
 
     _.setPlotPoints = function (shouldPlotPoints) {
         plotPoints = shouldPlotPoints;
         return this;
-    }
+    };
 
     colors = ["rgb(114,147,203)", "rgb(225,151,76)", "rgb(132,186,91)", "rgb(211,94,96)", "rgb(144,103,167)"];
 
     _.setColors = function (colorsArray) {
         colors = colorsArray;
         return this;
-    }
+    };
 
     // a function to compute the order of magnitude of a number, to use for scaling
     var computeOrderOfMagnitude = function (number) {
@@ -183,14 +183,14 @@ var PlotSvg = function () {
     // create the raw SVG picture for display, assumes a width/height aspect ratio of 3/2
     var startPlot = function (title, xAxis, yAxis, domain) {
         // this is carefully calculated to render a 600x400 graph in a 3x2 outer frame
-        var buffer = 0.15 * 400;
+        var buffer = 0.15 * domain.y.displaySize;
         var svg = '<div class="plot-svg-div">' +
             '<svg class="plot-svg-svg" xmlns="http://www.w3.org/2000/svg" version="1.1" ' +
             'viewBox="' + ((7.0 * -buffer) / 4.0) + ', ' + (-buffer) + ', ' + (domain.x.displaySize + (3.0 * buffer)) + ', ' + (domain.y.displaySize + (2.0 * buffer)) + '" ' +
             'preserveAspectRatio="xMidYMid meet"' +
             ' onmousedown="PlotSvg.startDrag(event)" onmouseup="PlotSvg.endDrag(event)" onmousemove="PlotSvg.drag(event)" onmousewheel="PlotSvg.wheel(event)" ondblclick="PlotSvg.dblClick(event)"' +
             '>' +
-            '<g transform="translate(0, 400), scale(1, -1)">' +
+            '<g transform="translate(0, ' + domain.y.displaySize + '), scale(1, -1)">' +
             '<g id="pan/zoom" transform="translate(0, 0), scale(1)" panscale="' + ((domain.x.displaySize + (3.0 * buffer)) / domain.x.displaySize) + '" style="pointer-events:none;">';
 
         // format plot labels according to their order of magnitude and
@@ -376,12 +376,11 @@ var PlotSvg = function () {
     var debug = function (panZoomNode) {
         var baseVal = panZoomNode.transform.baseVal;
         var translateMatrix = baseVal.getItem (0).matrix;
-        var translate = { x: translateMatrix.e, y : translateMatrix.f };
         var scale = baseVal.getItem (1).matrix.a.toPrecision(3);
-        var output = "Tx (" + translate.x.toPrecision(3) + ", " + translate.y.toPrecision(3) + "), Sc (" + scale + ")";
+        var output = "Tx (" + translateMatrix.e.toPrecision(3) + ", " + translateMatrix.f.toPrecision(3) + "), Sc (" + scale + ")";
         var debugDiv = document.getElementById("debug");
         debugDiv.innerHTML = output;
-    }
+    };
 
     var constrain = function (panZoomNode) {
         // viewbox -105,-60,780,520, vs 600x400
@@ -400,7 +399,7 @@ var PlotSvg = function () {
         if (translateMatrix.f > maxY) { translateMatrix.f = maxY; }
 
 
-    }
+    };
 
     _.startDrag = function (event) {
         var panZoomNode = event.currentTarget.getElementById("pan/zoom");
@@ -423,11 +422,11 @@ var PlotSvg = function () {
             var plotSvgDragData = panZoomNode.plotSvgDragData;
             var startPt = plotSvgDragData.startPt;
             var delta = { x:event.offsetX - startPt.x, y:event.offsetY - startPt.y };
-            var transform = panZoomNode.transform.baseVal.getItem (0).matrix;
+            var translateMatrix = panZoomNode.transform.baseVal.getItem (0).matrix;
             var lastTranslate = plotSvgDragData.lastTranslate;
             var panScale = plotSvgDragData.panScale;
-            transform.e = lastTranslate.x + (delta.x * panScale);
-            transform.f = lastTranslate.y - (delta.y * panScale);
+            translateMatrix.e = lastTranslate.x + (delta.x * panScale);
+            translateMatrix.f = lastTranslate.y - (delta.y * panScale);
             constrain (panZoomNode);
             debug (panZoomNode);
         }
@@ -436,12 +435,13 @@ var PlotSvg = function () {
     var zoomTable = [];
     _.wheel = function (event){
         var panZoomNode = event.currentTarget.getElementById("pan/zoom");
+        // if the plot zoom data has never been accessed, initialize it with sensible defaults
         if (! panZoomNode.hasOwnProperty ("plotSvgZoomData")) {
             panZoomNode.plotSvgZoomData = {};
             panZoomNode.plotSvgZoomData.zoomTableIndex = 0;
             panZoomNode.plotSvgZoomData.panScale = panZoomNode.attributes.panscale.value;
 
-            // generate a bunch of steps of zooming
+            // generate a bunch of steps for zooming smoothly
             var steps = 100;
             var range = 3;
             for (var i = 0; i <= steps; ++i) {
@@ -450,7 +450,10 @@ var PlotSvg = function () {
             }
         }
         var plotSvgZoomData = panZoomNode.plotSvgZoomData;
-        var transform = panZoomNode.transform.baseVal.getItem (1).matrix;
+
+        var baseVal = panZoomNode.transform.baseVal;
+        var translateMatrix = baseVal.getItem (0).matrix;
+        var scaleMatrix = baseVal.getItem (1).matrix;
 
         if (event.deltaY > 0) {
             // positive is down/out
@@ -458,7 +461,23 @@ var PlotSvg = function () {
         } else if (event.deltaY < 0) {
             plotSvgZoomData.zoomTableIndex = Math.min (plotSvgZoomData.zoomTableIndex + 1, zoomTable.length - 1);
         }
-        transform.a = transform.d = zoomTable[plotSvgZoomData.zoomTableIndex];
+        var scale = zoomTable[plotSvgZoomData.zoomTableIndex];
+
+        var panScale = panZoomNode.attributes.panscale.value;
+        var x = (event.offsetX * panScale) - 105;
+        var y = plotHeight - ((event.offsetY * panScale) - 60);
+
+        console.log ("-----");
+        console.log ("event.offsetY: " + event.offsetY);
+        console.log ("panscale: " + panScale);
+        console.log ("(pre-subtraction): " + event.offsetY * panScale);
+        console.log ("y: " + y);
+        //y = y / plotHeight;
+        console.log ("y (final): " + y);
+
+        translateMatrix.e = -x * (scale - 1);
+        translateMatrix.f = -y * (scale - 1);
+        scaleMatrix.a = scaleMatrix.d = scale;
         constrain (panZoomNode);
         debug (panZoomNode);
     };
