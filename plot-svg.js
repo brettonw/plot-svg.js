@@ -486,10 +486,12 @@ var PlotSvg = function () {
         // zoom operation
 
         // compute the current center in normalized view space
+        /*
         var center = {
             x: translateMatrix.e = -x * plotWidth * scaleMinus1,
             y: translateMatrix.f = -y * plotHeight * scaleMinus1
         }
+        */
 
         // compute the current mouse position in normalized view space
         var panScale = panZoomNode.attributes.panscale.value;
@@ -509,16 +511,16 @@ var PlotSvg = function () {
         console.log ("y (final): " + y);
 */
 
-        translateMatrix.e = -x * plotWidth * scaleMinus1;
-        translateMatrix.f = -y * plotHeight * scaleMinus1;
+        translateMatrix.e = -mouse.x * plotWidth * scaleMinus1;
+        translateMatrix.f = -mouse.y * plotHeight * scaleMinus1;
         scaleMatrix.a = scaleMatrix.d = scale;
         constrain (panZoomNode);
         debug (panZoomNode);
 
         // test
-        var x = -translateMatrix.e / scaleMinus1;
-        var y = -translateMatrix.f / scaleMinus1;
-        console.log ("test (" + x + ", " + y + ")");
+        //var x = -translateMatrix.e / scaleMinus1;
+        //var y = -translateMatrix.f / scaleMinus1;
+        //console.log ("test (" + x + ", " + y + ")");
     };
 
     _.dblClick = function (event) {
