@@ -82,8 +82,8 @@ let PlotSvg = function () {
             for (let j = 0; j < plotDataCount; ++j) {
                 let plotDatum = plotData[j];
                 newPlotData[j] = {
-                    x: new Number(plotDatum.x.toPrecision(targetPlotDataPrecision)),
-                    y: new Number(plotDatum.y.toPrecision(targetPlotDataPrecision))
+                    x: new Number(plotDatum.x).toPrecision(targetPlotDataPrecision),
+                    y: new Number(plotDatum.y).toPrecision(targetPlotDataPrecision)
                 };
             }
             newPlotDataArray[i] = newPlotData;
