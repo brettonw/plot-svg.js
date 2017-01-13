@@ -28,13 +28,8 @@
     font-size:          24px; 
     font-family:        sans-serif;
     fill:               #404040;
-}
-
-.plot-svg-axis-label {
-    font-size:          24px; 
-    font-family:        sans-serif;
-    fill:               #404040;
     text-anchor:        middle;
+
 }
 
 .plot-svg-tick-line {

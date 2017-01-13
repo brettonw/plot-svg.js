@@ -5,6 +5,9 @@ perfomed using CSS.
 var PlotSvg = function () {
     var _ = Object.create(null);
 
+    var plotWidth = 600;
+    var plotHeight = 400;
+
     // some styling values
     var plotLines = true;
     var plotPoints = true;
@@ -12,26 +15,61 @@ var PlotSvg = function () {
     _.setPlotLines = function (shouldPlotLines) {
         plotLines = shouldPlotLines;
         return this;
-    }
+    };
 
     _.setPlotPoints = function (shouldPlotPoints) {
         plotPoints = shouldPlotPoints;
         return this;
-    }
+    };
 
     colors = ["rgb(114,147,203)", "rgb(225,151,76)", "rgb(132,186,91)", "rgb(211,94,96)", "rgb(144,103,167)"];
 
     _.setColors = function (colorsArray) {
         colors = colorsArray;
         return this;
-    }
+    };
 
+    // a function to compute the order of magnitude of a number, to use for scaling
+    var computeOrderOfMagnitude = function (number) {
+        number = Math.max(Math.abs(number), 1.0e-6);
+
+        // a big number, then a small number
+        var order = 0;
+        while (number >= 10.0) {
+            ++order;
+            number /= 10.0;
+        }
+        while (number < 1) {
+            --order;
+            number *= 10.0;
+        }
+        return order;
+    };
+
+    // apply a filter function across all the elements of an array
+    var arrayFilter = function (array, filterFunc, selector) {
+        var result;
+        if (typeof (selector) === 'function') {
+            result = selector(array[0]);
+            for (var i = 1, count = array.length; i < count; ++i) {
+                var test = selector(array[i]);
+                result = filterFunc(result, test);
+            }
+        } else {
+            result = array[0][selector];
+            for (var i = 1, count = array.length; i < count; ++i) {
+                var test = array[i][selector];
+                result = filterFunc(result, test);
+            }
+        }
+        return result;
+    };
+
+    // condition the input arrays, there's really no reason to treat any number in the array as more
+    // than 4 or 5 decimal places worth of information within the range, because that puts them in
+    // sub-sub-pixel range for almost all rendering cases, we copy the data in the array, rounded to
+    // the needed degree of precision
     var conditionPlotDataArray = function (plotDataArray) {
-        // condition the input arrays, there's really no reason to treat any
-        // number in the array as more than 4 or 5 decimal places worth of
-        // information because that puts them in sub-sub-pixel range for almost
-        // all rendering cases, we copy the data in the array, rounded to the
-        // needed degree of precision
         var targetPlotDataPrecision = 5;
         var plotDataArrayCount = plotDataArray.length;
         var newPlotDataArray = new Array(plotDataArrayCount);
@@ -49,11 +87,12 @@ var PlotSvg = function () {
             newPlotDataArray[i] = newPlotData;
         }
         return newPlotDataArray;
+        //return plotDataArray;
     };
 
+    // compute the range of the input array and use that to compute the delta and a divisor that
+    // gives us less than 10 clean ticks
     var buildDomain = function (plotDataArray) {
-        // compute the range of the input array and use that to compute the
-        // delta and a divisor that gives us less than 10 clean ticks
         var buildAxisDomain = function (arrayOfArrays, selector, expandDelta, displaySize) {
             // start by creating the base domain object, with the mapping from
             // compute space to display space, and empty ticks
@@ -69,43 +108,6 @@ var PlotSvg = function () {
 
             // make sure we can get some valid computations here
             if ((arrayOfArrays.length > 0) && (arrayOfArrays[0].length > 0)) {
-                // a function to compute the order of magnitude of a number, to use
-                // for scaling
-                var computeOrderOfMagnitude = function (number) {
-                    number = Math.max(Math.abs(number), 1.0e-6);
-
-                    // a big number, then a small number
-                    var order = 0;
-                    while (number >= 10.0) {
-                        ++order;
-                        number /= 10.0;
-                    }
-                    while (number < 1) {
-                        --order;
-                        number *= 10.0;
-                    }
-                    return order;
-                };
-
-                // functions to compute the range of the input array
-                var arrayFilter = function (array, filterFunc, selector) {
-                    var result;
-                    if (typeof (selector) === 'function') {
-                        result = selector(array[0]);
-                        for (var i = 1, count = array.length; i < count; ++i) {
-                            var test = selector(array[i]);
-                            result = filterFunc(result, test);
-                        }
-                    } else {
-                        result = array[0][selector];
-                        for (var i = 1, count = array.length; i < count; ++i) {
-                            var test = array[i][selector];
-                            result = filterFunc(result, test);
-                        }
-                    }
-                    return result;
-                };
-
                 // compute the ranges, then check that there *is* a range
                 var min = arrayFilter(arrayOfArrays, Math.min, function (array) {
                     return arrayFilter(array, Math.min, selector);
@@ -167,8 +169,8 @@ var PlotSvg = function () {
 
         // compute the domain of the data
         return {
-            x: buildAxisDomain(plotDataArray, 'x', false, 600),
-            y: buildAxisDomain(plotDataArray, 'y', false, 400),
+            x: buildAxisDomain(plotDataArray, 'x', false, plotWidth),
+            y: buildAxisDomain(plotDataArray, 'y', false, plotHeight),
             map: function (xy) {
                 return {
                     x: this.x.map(xy.x),
@@ -178,15 +180,18 @@ var PlotSvg = function () {
         };
     };
 
+    // create the raw SVG picture for display, assumes a width/height aspect ratio of 3/2
     var startPlot = function (title, xAxis, yAxis, domain) {
-        // create the raw SVG picture for display, assumes a width/height aspect ratio of 3/2
-        var buffer = 0.15 * 400;
+        // this is carefully calculated to render a 600x400 graph in a 3x2 outer frame
+        var buffer = 0.15 * domain.y.displaySize;
         var svg = '<div class="plot-svg-div">' +
             '<svg class="plot-svg-svg" xmlns="http://www.w3.org/2000/svg" version="1.1" ' +
             'viewBox="' + ((7.0 * -buffer) / 4.0) + ', ' + (-buffer) + ', ' + (domain.x.displaySize + (3.0 * buffer)) + ', ' + (domain.y.displaySize + (2.0 * buffer)) + '" ' +
             'preserveAspectRatio="xMidYMid meet"' +
+            ' onmousedown="PlotSvg.startDrag(event)" onmouseup="PlotSvg.endDrag(event)" onmousemove="PlotSvg.drag(event)" onmousewheel="PlotSvg.wheel(event)" ondblclick="PlotSvg.dblClick(event)"' +
             '>' +
-            '<g transform="translate(0, 400), scale(1, -1)">';
+            '<g transform="translate(0, ' + domain.y.displaySize + '), scale(1, -1)">' +
+            '<g id="pan/zoom" transform="translate(0, 0), scale(1)" panscale="' + ((domain.x.displaySize + (3.0 * buffer)) / domain.x.displaySize) + '" style="pointer-events:none;">';
 
         // format plot labels according to their order of magnitude and
         // desired precision
@@ -242,8 +247,8 @@ var PlotSvg = function () {
         return svg;
     };
 
+    // add a legend
     var plotLegend = function (svg, legend) {
-        // add a legend
         var legendSize = 24;
         var legendBuffer = 6;
         var height = ((legendSize + legendBuffer) * legend.length) + legendBuffer;
@@ -289,7 +294,7 @@ var PlotSvg = function () {
                 var plotData = conditionedPlotDataArray[i];
                 for (var j = 0, jcount = plotData.length; j < jcount; ++j) {
                     var datum = domain.map(plotData[j]);
-                    svg += '<circle class="plot-svg-plot-point" fill="' + colors[i % colors.length] + '" cx="' + datum.x + '" cy="' + datum.y + '"><title>' + plotData[j].x + ', ' + plotData[j].y + '</title></circle>';
+                    svg += '<circle class="plot-svg-plot-point" fill="' + colors[i % colors.length] + '" r="4" cx="' + datum.x + '" cy="' + datum.y + '"><title>' + plotData[j].x + ', ' + plotData[j].y + '</title></circle>';
                 }
             }
         }
@@ -326,6 +331,34 @@ var PlotSvg = function () {
         return svg;
     };
 
+    _.barchart = function (title, xAxis, yAxis, plotData) {
+        var conditionedPlotDataArray = conditionPlotDataArray([plotData]);
+        var domain = buildDomain(conditionedPlotDataArray);
+        var svg = startPlot(title, xAxis, yAxis, domain);
+
+        // assuming the x axis is uniformly distributed, compute the width and offset for each bar
+
+        // make the plots
+        for (var i = 0, count = conditionedPlotDataArray.length; i < count; ++i) {
+            // plot the bars
+            svg += '<rect x="50" y="20" width="150" height="150">';
+
+            // plot the points
+            if (plotPoints) {
+                // put down the points
+                var plotData = conditionedPlotDataArray[i];
+                for (var j = 0, jcount = plotData.length; j < jcount; ++j) {
+                    var datum = domain.map(plotData[j]);
+                    svg += '<circle class="plot-svg-plot-point" fill="' + colors[i % colors.length] + '" cx="' + datum.x + '" cy="' + datum.y + '"><title>' + plotData[j].x + ', ' + plotData[j].y + '</title></circle>';
+                }
+            }
+        }
+
+        // finish the plot
+        var svg = finishPlot(svg);
+        return svg;
+    };
+
     _.wrap = function (svg, width, divId, cssClass) {
         var height = (2 * width) / 3;
         var result = '<div ';
@@ -340,5 +373,167 @@ var PlotSvg = function () {
         return result;
     };
 
+    var debug = function (panZoomNode) {
+        var baseVal = panZoomNode.transform.baseVal;
+        var translateMatrix = baseVal.getItem (0).matrix;
+        var scale = baseVal.getItem (1).matrix.a.toPrecision(3);
+        var output = "Tx (" + translateMatrix.e.toPrecision(3) + ", " + translateMatrix.f.toPrecision(3) + "), Sc (" + scale + ")";
+        var debugDiv = document.getElementById("debug");
+        debugDiv.innerHTML = output;
+    };
+
+    var constrain = function (panZoomNode) {
+        return;
+        // viewbox -105,-60,780,520, vs 600x400
+        var baseVal = panZoomNode.transform.baseVal;
+        var translateMatrix = baseVal.getItem (0).matrix;
+        var scale = (baseVal.getItem (1).matrix.a) - 1.0;
+
+        // XXX want to get rid of these damn magic numbers...
+        var minX = -780 * scale;
+        var maxX = 105 * scale;
+        if (translateMatrix.e < minX) { translateMatrix.e = minX; }
+        if (translateMatrix.e > maxX) { translateMatrix.e = maxX; }
+
+        var minY = -520 * scale;
+        var maxY = 60 * scale;
+        if (translateMatrix.f < minY) { translateMatrix.f = minY; }
+        if (translateMatrix.f > maxY) { translateMatrix.f = maxY; }
+
+
+    };
+
+    _.startDrag = function (event) {
+        var panZoomNode = event.currentTarget.getElementById("pan/zoom");
+        var plotSvgDragData = panZoomNode.plotSvgDragData = {};
+        var transform = panZoomNode.transform.baseVal.getItem (0).matrix;
+        plotSvgDragData.lastTranslate = { x: transform.e, y: transform.f};
+        plotSvgDragData.startPt = { x: event.offsetX, y: event.offsetY };
+        plotSvgDragData.panScale = panZoomNode.attributes.panscale.value;
+        debug (panZoomNode);
+    };
+
+    _.endDrag = function (event){
+        var panZoomNode = event.currentTarget.getElementById("pan/zoom");
+        delete panZoomNode.plotSvgDragData;
+    };
+
+    _.drag = function (event){
+        var panZoomNode = event.currentTarget.getElementById("pan/zoom");
+        if (panZoomNode.hasOwnProperty ("plotSvgDragData")) {
+            var plotSvgDragData = panZoomNode.plotSvgDragData;
+            var startPt = plotSvgDragData.startPt;
+            var delta = { x:event.offsetX - startPt.x, y:event.offsetY - startPt.y };
+            var translateMatrix = panZoomNode.transform.baseVal.getItem (0).matrix;
+            var lastTranslate = plotSvgDragData.lastTranslate;
+            var panScale = plotSvgDragData.panScale;
+            translateMatrix.e = lastTranslate.x + (delta.x * panScale);
+            translateMatrix.f = lastTranslate.y - (delta.y * panScale);
+            constrain (panZoomNode);
+            debug (panZoomNode);
+        }
+    };
+
+    var zoomTable = [];
+    _.wheel = function (event) {
+        // get the pan/zoom node under the event target
+        var panZoomNode = event.currentTarget.getElementById("pan/zoom");
+
+        // get the plot zoom data... if the plot zoom data has never been accessed, initialize it
+        // with sensible defaults
+        var plotSvgZoomData = panZoomNode.plotSvgZoomData;
+        if (!panZoomNode.hasOwnProperty("plotSvgZoomData")) {
+            plotSvgZoomData = panZoomNode.plotSvgZoomData = {};
+            plotSvgZoomData.zoomTableIndex = 0;
+            plotSvgZoomData.panScale = panZoomNode.attributes.panscale.value;
+            plotSvgZoomData.count = 0;
+
+            // generate a bunch of steps for zooming smoothly, this uses a square root curve for a
+            // perceptually linear progression
+            var steps = 100;
+            var range = 3;
+            for (var i = 0; i <= steps; ++i) {
+                var delta = i / steps;
+                zoomTable.push(1 + ((delta * delta) * range));
+            }
+        }
+
+        // set up the basic data we'll use
+        var baseVal = panZoomNode.transform.baseVal;
+        var translateMatrix = baseVal.getItem (0).matrix;
+        var scaleMatrix = baseVal.getItem (1).matrix;
+        plotSvgZoomData.count++;
+
+        // check for some pre-existing values
+        if (plotSvgZoomData.zoomTableIndex != 0) {
+            var lastScaleMinus1 = zoomTable[plotSvgZoomData.zoomTableIndex] - 1;
+            var x = -translateMatrix.e / lastScaleMinus1;
+            var y = -translateMatrix.f / lastScaleMinus1;
+            console.log ("last (" + x + ", " + y + ")");
+        }
+
+        // adjust the zoom according to the mouse motion
+        if (event.deltaY > 0) {
+            // positive is down/out
+            plotSvgZoomData.zoomTableIndex = Math.max(plotSvgZoomData.zoomTableIndex - 1, 0);
+        } else if (event.deltaY < 0) {
+            plotSvgZoomData.zoomTableIndex = Math.min (plotSvgZoomData.zoomTableIndex + 1, zoomTable.length - 1);
+        }
+        var scale = zoomTable[plotSvgZoomData.zoomTableIndex];
+        var scaleMinus1 = scale - 1.0;
+
+        // the existing matrix transformation values represent a certain offset in x from a previous
+        // zoom operation
+
+        // compute the current center in normalized view space
+        /*
+        var center = {
+            x: translateMatrix.e = -x * plotWidth * scaleMinus1,
+            y: translateMatrix.f = -y * plotHeight * scaleMinus1
+        }
+        */
+
+        // compute the current mouse position in normalized view space
+        var panScale = panZoomNode.attributes.panscale.value;
+        var mouse = {
+            x: Math.min(Math.max(((event.offsetX * panScale) - 105) / plotWidth, 0), 1),
+            y: Math.min(Math.max((plotHeight - ((event.offsetY * panScale) - 60)) / plotHeight, 0), 1)
+        };
+        console.log ("now: " + plotSvgZoomData.count + ", xy (" + mouse.x + ", " + mouse.y + ")");
+
+        /*
+        console.log ("-----");
+        console.log ("event.offsetY: " + event.offsetY);
+        console.log ("panscale: " + panScale);
+        console.log ("(pre-subtraction): " + event.offsetY * panScale);
+        console.log ("y: " + y);
+        //y = y / plotHeight;
+        console.log ("y (final): " + y);
+*/
+
+        translateMatrix.e = -mouse.x * plotWidth * scaleMinus1;
+        translateMatrix.f = -mouse.y * plotHeight * scaleMinus1;
+        scaleMatrix.a = scaleMatrix.d = scale;
+        constrain (panZoomNode);
+        debug (panZoomNode);
+
+        // test
+        //var x = -translateMatrix.e / scaleMinus1;
+        //var y = -translateMatrix.f / scaleMinus1;
+        //console.log ("test (" + x + ", " + y + ")");
+    };
+
+    _.dblClick = function (event) {
+        // reset
+        var panZoomNode = event.currentTarget.getElementById("pan/zoom");
+        var baseVal = panZoomNode.transform.baseVal;
+        var translateMatrix = baseVal.getItem (0).matrix;
+        translateMatrix.e = translateMatrix.f = 0;
+        var scaleMatrix = baseVal.getItem (1).matrix;
+        scaleMatrix.a = scaleMatrix.d = 1;
+        debug (panZoomNode);
+    };
+
     return _;
 }();
+
