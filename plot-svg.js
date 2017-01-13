@@ -1,16 +1,18 @@
+"use strict;"
+
 /*
 PlotSvg is a Javascript module for plotting simple 2D graphs from set of {x, y} points. Styling is
 perfomed using CSS.
  */
-var PlotSvg = function () {
-    var _ = Object.create(null);
+let PlotSvg = function () {
+    let _ = Object.create(null);
 
-    var plotWidth = 600;
-    var plotHeight = 400;
+    let plotWidth = 600;
+    let plotHeight = 400;
 
     // some styling values
-    var plotLines = true;
-    var plotPoints = true;
+    let plotLines = true;
+    let plotPoints = true;
 
     _.setPlotLines = function (shouldPlotLines) {
         plotLines = shouldPlotLines;
@@ -30,11 +32,11 @@ var PlotSvg = function () {
     };
 
     // a function to compute the order of magnitude of a number, to use for scaling
-    var computeOrderOfMagnitude = function (number) {
+    let computeOrderOfMagnitude = function (number) {
         number = Math.max(Math.abs(number), 1.0e-6);
 
         // a big number, then a small number
-        var order = 0;
+        let order = 0;
         while (number >= 10.0) {
             ++order;
             number /= 10.0;
@@ -47,18 +49,18 @@ var PlotSvg = function () {
     };
 
     // apply a filter function across all the elements of an array
-    var arrayFilter = function (array, filterFunc, selector) {
-        var result;
+    let arrayFilter = function (array, filterFunc, selector) {
+        let result;
         if (typeof (selector) === 'function') {
             result = selector(array[0]);
-            for (var i = 1, count = array.length; i < count; ++i) {
-                var test = selector(array[i]);
+            for (let i = 1, count = array.length; i < count; ++i) {
+                let test = selector(array[i]);
                 result = filterFunc(result, test);
             }
         } else {
             result = array[0][selector];
-            for (var i = 1, count = array.length; i < count; ++i) {
-                var test = array[i][selector];
+            for (let i = 1, count = array.length; i < count; ++i) {
+                let test = array[i][selector];
                 result = filterFunc(result, test);
             }
         }
@@ -69,16 +71,16 @@ var PlotSvg = function () {
     // than 4 or 5 decimal places worth of information within the range, because that puts them in
     // sub-sub-pixel range for almost all rendering cases, we copy the data in the array, rounded to
     // the needed degree of precision
-    var conditionPlotDataArray = function (plotDataArray) {
-        var targetPlotDataPrecision = 5;
-        var plotDataArrayCount = plotDataArray.length;
-        var newPlotDataArray = new Array(plotDataArrayCount);
-        for (var i = 0; i < plotDataArrayCount; ++i) {
-            var plotData = plotDataArray[i];
-            var plotDataCount = plotData.length;
-            var newPlotData = new Array(plotDataCount);
-            for (var j = 0; j < plotDataCount; ++j) {
-                var plotDatum = plotData[j];
+    let conditionPlotDataArray = function (plotDataArray) {
+        let targetPlotDataPrecision = 5;
+        let plotDataArrayCount = plotDataArray.length;
+        let newPlotDataArray = new Array(plotDataArrayCount);
+        for (let i = 0; i < plotDataArrayCount; ++i) {
+            let plotData = plotDataArray[i];
+            let plotDataCount = plotData.length;
+            let newPlotData = new Array(plotDataCount);
+            for (let j = 0; j < plotDataCount; ++j) {
+                let plotDatum = plotData[j];
                 newPlotData[j] = {
                     x: new Number(plotDatum.x.toPrecision(targetPlotDataPrecision)),
                     y: new Number(plotDatum.y.toPrecision(targetPlotDataPrecision))
@@ -92,11 +94,11 @@ var PlotSvg = function () {
 
     // compute the range of the input array and use that to compute the delta and a divisor that
     // gives us less than 10 clean ticks
-    var buildDomain = function (plotDataArray) {
-        var buildAxisDomain = function (arrayOfArrays, selector, expandDelta, displaySize) {
+    let buildDomain = function (plotDataArray) {
+        let buildAxisDomain = function (arrayOfArrays, selector, expandDelta, displaySize) {
             // start by creating the base domain object, with the mapping from
             // compute space to display space, and empty ticks
-            var domain = {
+            let domain = {
                 "displaySize": displaySize,
                 "min": 0.0,
                 "delta": 1.0,
@@ -109,13 +111,13 @@ var PlotSvg = function () {
             // make sure we can get some valid computations here
             if ((arrayOfArrays.length > 0) && (arrayOfArrays[0].length > 0)) {
                 // compute the ranges, then check that there *is* a range
-                var min = arrayFilter(arrayOfArrays, Math.min, function (array) {
+                let min = arrayFilter(arrayOfArrays, Math.min, function (array) {
                     return arrayFilter(array, Math.min, selector);
                 });
-                var max = arrayFilter(arrayOfArrays, Math.max, function (array) {
+                let max = arrayFilter(arrayOfArrays, Math.max, function (array) {
                     return arrayFilter(array, Math.max, selector);
                 });
-                var delta = max - min;
+                let delta = max - min;
                 if (delta == 0) {
                     max = min + 1.0;
                     delta = 1.0;
@@ -125,7 +127,7 @@ var PlotSvg = function () {
                 // purposes, just so lines don't rest right on an edge of the plot
                 if (expandDelta) {
                     // expand the range by 1%...
-                    var deltaDelta = delta * 0.01;
+                    let deltaDelta = delta * 0.01;
                     if (max != 0) {
                         max += deltaDelta;
                     }
@@ -136,12 +138,12 @@ var PlotSvg = function () {
                 }
 
                 // compute the drawing scale, and the placement for tick divisor
-                var tickOrderOfMagnitude = computeOrderOfMagnitude(delta);
-                var tryScale = [1.0, 2.0, 2.5, 5.0, 10.0, 20.0, 25.0];
-                var tryPrecision = [1, 1, 2, 1, 1, 1, 2];
-                var tickDivisorBase = Math.pow(10, tickOrderOfMagnitude - 1);
-                var tickDivisorIndex = 0;
-                var tickDivisor = tickDivisorBase * tryScale[tickDivisorIndex];
+                let tickOrderOfMagnitude = computeOrderOfMagnitude(delta);
+                let tryScale = [1.0, 2.0, 2.5, 5.0, 10.0, 20.0, 25.0];
+                let tryPrecision = [1, 1, 2, 1, 1, 1, 2];
+                let tickDivisorBase = Math.pow(10, tickOrderOfMagnitude - 1);
+                let tickDivisorIndex = 0;
+                let tickDivisor = tickDivisorBase * tryScale[tickDivisorIndex];
                 while ((delta / tickDivisor) > 9) {
                     tickDivisor = tickDivisorBase * tryScale[++tickDivisorIndex];
                 }
@@ -157,9 +159,9 @@ var PlotSvg = function () {
                 domain.precision = tryPrecision[tickDivisorIndex];
 
                 // the ticks
-                var tickCount = Math.round((domain.max - domain.min) / tickDivisor);
-                var incr = (domain.max - domain.min) / tickCount;
-                for (var i = 0; i <= tickCount; ++i) {
+                let tickCount = Math.round((domain.max - domain.min) / tickDivisor);
+                let incr = (domain.max - domain.min) / tickCount;
+                for (let i = 0; i <= tickCount; ++i) {
                     domain.ticks.push(domain.min + (i * incr));
                 }
             }
@@ -181,10 +183,10 @@ var PlotSvg = function () {
     };
 
     // create the raw SVG picture for display, assumes a width/height aspect ratio of 3/2
-    var startPlot = function (title, xAxis, yAxis, domain) {
+    let startPlot = function (title, xAxis, yAxis, domain) {
         // this is carefully calculated to render a 600x400 graph in a 3x2 outer frame
-        var buffer = 0.15 * domain.y.displaySize;
-        var svg = '<div class="plot-svg-div">' +
+        let buffer = 0.15 * domain.y.displaySize;
+        let svg = '<div class="plot-svg-div">' +
             '<svg class="plot-svg-svg" xmlns="http://www.w3.org/2000/svg" version="1.1" ' +
             'viewBox="' + ((7.0 * -buffer) / 4.0) + ', ' + (-buffer) + ', ' + (domain.x.displaySize + (3.0 * buffer)) + ', ' + (domain.y.displaySize + (2.0 * buffer)) + '" ' +
             'preserveAspectRatio="xMidYMid meet"' +
@@ -195,9 +197,9 @@ var PlotSvg = function () {
 
         // format plot labels according to their order of magnitude and
         // desired precision
-        var labelText = function (number, order, precision) {
-            var divisor = Math.pow(10, order);
-            var value = number / divisor;
+        let labelText = function (number, order, precision) {
+            let divisor = Math.pow(10, order);
+            let value = number / divisor;
             if (Math.abs(order) <= 3) {
                 value *= Math.pow(10, order);
                 precision = Math.max(0, precision - order);
@@ -210,21 +212,21 @@ var PlotSvg = function () {
         };
 
         // draw the x ticks plus the labels
-        var bottom = 0;
-        var top = domain.y.displaySize;
-        for (var i = 0, count = domain.x.ticks.length; i < count; ++i) {
-            var ti = domain.x.ticks[i];
-            var tick = domain.x.map(ti);
+        let bottom = 0;
+        let top = domain.y.displaySize;
+        for (let i = 0, count = domain.x.ticks.length; i < count; ++i) {
+            let ti = domain.x.ticks[i];
+            let tick = domain.x.map(ti);
             svg += '<line x1="' + tick + '" y1="0" x2="' + tick + '" y2="' + top + '" class="plot-svg-tick-line" />'
             svg += '<text  x="' + tick + '" y="12.5" class="plot-svg-x-tick-label" transform="scale(1,-1)"><tspan dy="0.5em">' + labelText(ti, domain.x.orderOfMagnitude, domain.x.precision) + '</tspan></text>';
         }
 
         // draw the y ticks
-        var left = 0;
-        var right = domain.x.displaySize;
-        for (var i = 0, count = domain.y.ticks.length; i < count; ++i) {
-            var ti = domain.y.ticks[i];
-            var tick = domain.y.map(ti);
+        let left = 0;
+        let right = domain.x.displaySize;
+        for (let i = 0, count = domain.y.ticks.length; i < count; ++i) {
+            let ti = domain.y.ticks[i];
+            let tick = domain.y.map(ti);
             svg += '<line x1="0" y1="' + tick + '" x2="' + right + '" y2="' + tick + '" class="plot-svg-tick-line" />'
             svg += '<text  x="-7.5" y="' + -tick + '" class="plot-svg-y-tick-label" transform="scale(1,-1)"><tspan dy="0.33em">' + labelText(ti, domain.y.orderOfMagnitude, domain.y.precision) + '</tspan></text>';
         }
@@ -248,16 +250,16 @@ var PlotSvg = function () {
     };
 
     // add a legend
-    var plotLegend = function (svg, legend) {
-        var legendSize = 24;
-        var legendBuffer = 6;
-        var height = ((legendSize + legendBuffer) * legend.length) + legendBuffer;
-        var x = 440;
-        var y = 240 - (height / 2);
+    let plotLegend = function (svg, legend) {
+        let legendSize = 24;
+        let legendBuffer = 6;
+        let height = ((legendSize + legendBuffer) * legend.length) + legendBuffer;
+        let x = 440;
+        let y = 240 - (height / 2);
         svg += '<rect class="plot-svg-plot-legend" x="' + x +'" y="' + y + '" height="' + height + '" />';
-        for (var i = 0, count = legend.length; i < count; ++i) {
-            var xx = x + legendBuffer;
-            var yy = (y + legendBuffer) + (i * (legendSize + legendBuffer));
+        for (let i = 0, count = legend.length; i < count; ++i) {
+            let xx = x + legendBuffer;
+            let yy = (y + legendBuffer) + (i * (legendSize + legendBuffer));
             svg += '<rect class="plot-svg-plot-legend-box" x="' + xx + '" y="' + yy + '" fill="' + colors[i % colors.length] + '" width="' + legendSize + '" height="' + legendSize + '"  />';
             xx += legendSize + legendBuffer;
             yy += legendBuffer;
@@ -266,23 +268,23 @@ var PlotSvg = function () {
         return svg;
     };
 
-    var finishPlot = function (svg) {
+    let finishPlot = function (svg) {
         return svg + "</svg></div><br>";
     };
 
     _.multipleLine = function (title, xAxis, yAxis, plotDataArray, legend) {
-        var conditionedPlotDataArray = conditionPlotDataArray(plotDataArray);
-        var domain = buildDomain(conditionedPlotDataArray);
-        var svg = startPlot(title, xAxis, yAxis, domain);
+        let conditionedPlotDataArray = conditionPlotDataArray(plotDataArray);
+        let domain = buildDomain(conditionedPlotDataArray);
+        let svg = startPlot(title, xAxis, yAxis, domain);
 
         // make the plots
-        for (var i = 0, count = conditionedPlotDataArray.length; i < count; ++i) {
+        for (let i = 0, count = conditionedPlotDataArray.length; i < count; ++i) {
             // plot the lines
             if (plotLines) {
                 svg += '<polyline class="plot-svg-plot-line" stroke="' + colors[i % colors.length] + '" points="';
-                var plotData = conditionedPlotDataArray[i];
-                for (var j = 0, jcount = plotData.length; j < jcount; ++j) {
-                    var datum = domain.map(plotData[j]);
+                let plotData = conditionedPlotDataArray[i];
+                for (let j = 0, jcount = plotData.length; j < jcount; ++j) {
+                    let datum = domain.map(plotData[j]);
                     svg += datum.x + ',' + datum.y + ' ';
                 }
                 svg += '" />';
@@ -291,9 +293,9 @@ var PlotSvg = function () {
             // plot the points
             if (plotPoints) {
                 // put down the points
-                var plotData = conditionedPlotDataArray[i];
-                for (var j = 0, jcount = plotData.length; j < jcount; ++j) {
-                    var datum = domain.map(plotData[j]);
+                let plotData = conditionedPlotDataArray[i];
+                for (let j = 0, jcount = plotData.length; j < jcount; ++j) {
+                    let datum = domain.map(plotData[j]);
                     svg += '<circle class="plot-svg-plot-point" fill="' + colors[i % colors.length] + '" r="4" cx="' + datum.x + '" cy="' + datum.y + '"><title>' + plotData[j].x + ', ' + plotData[j].y + '</title></circle>';
                 }
             }
@@ -304,7 +306,7 @@ var PlotSvg = function () {
         }
 
         // finish the plot
-        var svg = finishPlot(svg);
+        svg = finishPlot(svg);
         return svg;
     };
 
@@ -313,55 +315,55 @@ var PlotSvg = function () {
     };
 
     _.scatter = function (title, xAxis, yAxis, plotData) {
-        var conditionedPlotDataArray = conditionPlotDataArray([plotData]);
-        var domain = buildDomain(conditionedPlotDataArray);
-        var svg = startPlot(title, xAxis, yAxis, domain);
+        let conditionedPlotDataArray = conditionPlotDataArray([plotData]);
+        let domain = buildDomain(conditionedPlotDataArray);
+        let svg = startPlot(title, xAxis, yAxis, domain);
 
         // put down the points (this ignores the plotPoints and plotLines settings)
-        for (var i = 0, count = conditionedPlotDataArray.length; i < count; ++i) {
-            var plotData = conditionedPlotDataArray[i];
-            for (var j = 0, jcount = plotData.length; j < jcount; ++j) {
-                var datum = domain.map(plotData[j]);
+        for (let i = 0, count = conditionedPlotDataArray.length; i < count; ++i) {
+            let plotData = conditionedPlotDataArray[i];
+            for (let j = 0, jcount = plotData.length; j < jcount; ++j) {
+                let datum = domain.map(plotData[j]);
                 svg += '<circle class="plot-svg-plot-point" fill="' + colors[i % colors.length] + '" cx="' + datum.x + '" cy="' + datum.y + '"><title>' + plotData[j].x + ', ' + plotData[j].y + '</title></circle>';
             }
         }
 
         // finish the plot
-        var svg = finishPlot(svg);
+        svg = finishPlot(svg);
         return svg;
     };
 
     _.barchart = function (title, xAxis, yAxis, plotData) {
-        var conditionedPlotDataArray = conditionPlotDataArray([plotData]);
-        var domain = buildDomain(conditionedPlotDataArray);
-        var svg = startPlot(title, xAxis, yAxis, domain);
+        let conditionedPlotDataArray = conditionPlotDataArray([plotData]);
+        let domain = buildDomain(conditionedPlotDataArray);
+        let svg = startPlot(title, xAxis, yAxis, domain);
 
         // assuming the x axis is uniformly distributed, compute the width and offset for each bar
 
         // make the plots
-        for (var i = 0, count = conditionedPlotDataArray.length; i < count; ++i) {
+        for (let i = 0, count = conditionedPlotDataArray.length; i < count; ++i) {
             // plot the bars
             svg += '<rect x="50" y="20" width="150" height="150">';
 
             // plot the points
             if (plotPoints) {
                 // put down the points
-                var plotData = conditionedPlotDataArray[i];
-                for (var j = 0, jcount = plotData.length; j < jcount; ++j) {
-                    var datum = domain.map(plotData[j]);
+                let plotData = conditionedPlotDataArray[i];
+                for (let j = 0, jcount = plotData.length; j < jcount; ++j) {
+                    let datum = domain.map(plotData[j]);
                     svg += '<circle class="plot-svg-plot-point" fill="' + colors[i % colors.length] + '" cx="' + datum.x + '" cy="' + datum.y + '"><title>' + plotData[j].x + ', ' + plotData[j].y + '</title></circle>';
                 }
             }
         }
 
         // finish the plot
-        var svg = finishPlot(svg);
+        svg = finishPlot(svg);
         return svg;
     };
 
     _.wrap = function (svg, width, divId, cssClass) {
-        var height = (2 * width) / 3;
-        var result = '<div ';
+        let height = (2 * width) / 3;
+        let result = '<div ';
         if (divId != null) {
             result += 'id="' + divId + '" ';
         }
@@ -373,30 +375,30 @@ var PlotSvg = function () {
         return result;
     };
 
-    var debug = function (panZoomNode) {
-        var baseVal = panZoomNode.transform.baseVal;
-        var translateMatrix = baseVal.getItem (0).matrix;
-        var scale = baseVal.getItem (1).matrix.a.toPrecision(3);
-        var output = "Tx (" + translateMatrix.e.toPrecision(3) + ", " + translateMatrix.f.toPrecision(3) + "), Sc (" + scale + ")";
-        var debugDiv = document.getElementById("debug");
+    let debug = function (panZoomNode) {
+        let baseVal = panZoomNode.transform.baseVal;
+        let translateMatrix = baseVal.getItem (0).matrix;
+        let scale = baseVal.getItem (1).matrix.a.toPrecision(3);
+        let output = "Tx (" + translateMatrix.e.toPrecision(3) + ", " + translateMatrix.f.toPrecision(3) + "), Sc (" + scale + ")";
+        let debugDiv = document.getElementById("debug");
         debugDiv.innerHTML = output;
     };
 
-    var constrain = function (panZoomNode) {
+    let constrain = function (panZoomNode) {
         return;
         // viewbox -105,-60,780,520, vs 600x400
-        var baseVal = panZoomNode.transform.baseVal;
-        var translateMatrix = baseVal.getItem (0).matrix;
-        var scale = (baseVal.getItem (1).matrix.a) - 1.0;
+        let baseVal = panZoomNode.transform.baseVal;
+        let translateMatrix = baseVal.getItem (0).matrix;
+        let scale = (baseVal.getItem (1).matrix.a) - 1.0;
 
         // XXX want to get rid of these damn magic numbers...
-        var minX = -780 * scale;
-        var maxX = 105 * scale;
+        let minX = -780 * scale;
+        let maxX = 105 * scale;
         if (translateMatrix.e < minX) { translateMatrix.e = minX; }
         if (translateMatrix.e > maxX) { translateMatrix.e = maxX; }
 
-        var minY = -520 * scale;
-        var maxY = 60 * scale;
+        let minY = -520 * scale;
+        let maxY = 60 * scale;
         if (translateMatrix.f < minY) { translateMatrix.f = minY; }
         if (translateMatrix.f > maxY) { translateMatrix.f = maxY; }
 
@@ -404,9 +406,9 @@ var PlotSvg = function () {
     };
 
     _.startDrag = function (event) {
-        var panZoomNode = event.currentTarget.getElementById("pan/zoom");
-        var plotSvgDragData = panZoomNode.plotSvgDragData = {};
-        var transform = panZoomNode.transform.baseVal.getItem (0).matrix;
+        let panZoomNode = event.currentTarget.getElementById("pan/zoom");
+        let plotSvgDragData = panZoomNode.plotSvgDragData = {};
+        let transform = panZoomNode.transform.baseVal.getItem (0).matrix;
         plotSvgDragData.lastTranslate = { x: transform.e, y: transform.f};
         plotSvgDragData.startPt = { x: event.offsetX, y: event.offsetY };
         plotSvgDragData.panScale = panZoomNode.attributes.panscale.value;
@@ -414,19 +416,19 @@ var PlotSvg = function () {
     };
 
     _.endDrag = function (event){
-        var panZoomNode = event.currentTarget.getElementById("pan/zoom");
+        let panZoomNode = event.currentTarget.getElementById("pan/zoom");
         delete panZoomNode.plotSvgDragData;
     };
 
     _.drag = function (event){
-        var panZoomNode = event.currentTarget.getElementById("pan/zoom");
+        let panZoomNode = event.currentTarget.getElementById("pan/zoom");
         if (panZoomNode.hasOwnProperty ("plotSvgDragData")) {
-            var plotSvgDragData = panZoomNode.plotSvgDragData;
-            var startPt = plotSvgDragData.startPt;
-            var delta = { x:event.offsetX - startPt.x, y:event.offsetY - startPt.y };
-            var translateMatrix = panZoomNode.transform.baseVal.getItem (0).matrix;
-            var lastTranslate = plotSvgDragData.lastTranslate;
-            var panScale = plotSvgDragData.panScale;
+            let plotSvgDragData = panZoomNode.plotSvgDragData;
+            let startPt = plotSvgDragData.startPt;
+            let delta = { x:event.offsetX - startPt.x, y:event.offsetY - startPt.y };
+            let translateMatrix = panZoomNode.transform.baseVal.getItem (0).matrix;
+            let lastTranslate = plotSvgDragData.lastTranslate;
+            let panScale = plotSvgDragData.panScale;
             translateMatrix.e = lastTranslate.x + (delta.x * panScale);
             translateMatrix.f = lastTranslate.y - (delta.y * panScale);
             constrain (panZoomNode);
@@ -434,14 +436,14 @@ var PlotSvg = function () {
         }
     };
 
-    var zoomTable = [];
+    let zoomTable = [];
     _.wheel = function (event) {
         // get the pan/zoom node under the event target
-        var panZoomNode = event.currentTarget.getElementById("pan/zoom");
+        let panZoomNode = event.currentTarget.getElementById("pan/zoom");
 
         // get the plot zoom data... if the plot zoom data has never been accessed, initialize it
         // with sensible defaults
-        var plotSvgZoomData = panZoomNode.plotSvgZoomData;
+        let plotSvgZoomData = panZoomNode.plotSvgZoomData;
         if (!panZoomNode.hasOwnProperty("plotSvgZoomData")) {
             plotSvgZoomData = panZoomNode.plotSvgZoomData = {};
             plotSvgZoomData.zoomTableIndex = 0;
@@ -450,25 +452,25 @@ var PlotSvg = function () {
 
             // generate a bunch of steps for zooming smoothly, this uses a square root curve for a
             // perceptually linear progression
-            var steps = 100;
-            var range = 3;
-            for (var i = 0; i <= steps; ++i) {
-                var delta = i / steps;
+            let steps = 100;
+            let range = 3;
+            for (let i = 0; i <= steps; ++i) {
+                let delta = i / steps;
                 zoomTable.push(1 + ((delta * delta) * range));
             }
         }
 
         // set up the basic data we'll use
-        var baseVal = panZoomNode.transform.baseVal;
-        var translateMatrix = baseVal.getItem (0).matrix;
-        var scaleMatrix = baseVal.getItem (1).matrix;
+        let baseVal = panZoomNode.transform.baseVal;
+        let translateMatrix = baseVal.getItem (0).matrix;
+        let scaleMatrix = baseVal.getItem (1).matrix;
         plotSvgZoomData.count++;
 
         // check for some pre-existing values
         if (plotSvgZoomData.zoomTableIndex != 0) {
-            var lastScaleMinus1 = zoomTable[plotSvgZoomData.zoomTableIndex] - 1;
-            var x = -translateMatrix.e / lastScaleMinus1;
-            var y = -translateMatrix.f / lastScaleMinus1;
+            let lastScaleMinus1 = zoomTable[plotSvgZoomData.zoomTableIndex] - 1;
+            let x = -translateMatrix.e / lastScaleMinus1;
+            let y = -translateMatrix.f / lastScaleMinus1;
             console.log ("last (" + x + ", " + y + ")");
         }
 
@@ -479,23 +481,23 @@ var PlotSvg = function () {
         } else if (event.deltaY < 0) {
             plotSvgZoomData.zoomTableIndex = Math.min (plotSvgZoomData.zoomTableIndex + 1, zoomTable.length - 1);
         }
-        var scale = zoomTable[plotSvgZoomData.zoomTableIndex];
-        var scaleMinus1 = scale - 1.0;
+        let scale = zoomTable[plotSvgZoomData.zoomTableIndex];
+        let scaleMinus1 = scale - 1.0;
 
         // the existing matrix transformation values represent a certain offset in x from a previous
         // zoom operation
 
         // compute the current center in normalized view space
         /*
-        var center = {
+        let center = {
             x: translateMatrix.e = -x * plotWidth * scaleMinus1,
             y: translateMatrix.f = -y * plotHeight * scaleMinus1
         }
         */
 
         // compute the current mouse position in normalized view space
-        var panScale = panZoomNode.attributes.panscale.value;
-        var mouse = {
+        let panScale = panZoomNode.attributes.panscale.value;
+        let mouse = {
             x: Math.min(Math.max(((event.offsetX * panScale) - 105) / plotWidth, 0), 1),
             y: Math.min(Math.max((plotHeight - ((event.offsetY * panScale) - 60)) / plotHeight, 0), 1)
         };
@@ -518,18 +520,18 @@ var PlotSvg = function () {
         debug (panZoomNode);
 
         // test
-        //var x = -translateMatrix.e / scaleMinus1;
-        //var y = -translateMatrix.f / scaleMinus1;
+        //let x = -translateMatrix.e / scaleMinus1;
+        //let y = -translateMatrix.f / scaleMinus1;
         //console.log ("test (" + x + ", " + y + ")");
     };
 
     _.dblClick = function (event) {
         // reset
-        var panZoomNode = event.currentTarget.getElementById("pan/zoom");
-        var baseVal = panZoomNode.transform.baseVal;
-        var translateMatrix = baseVal.getItem (0).matrix;
+        let panZoomNode = event.currentTarget.getElementById("pan/zoom");
+        let baseVal = panZoomNode.transform.baseVal;
+        let translateMatrix = baseVal.getItem (0).matrix;
         translateMatrix.e = translateMatrix.f = 0;
-        var scaleMatrix = baseVal.getItem (1).matrix;
+        let scaleMatrix = baseVal.getItem (1).matrix;
         scaleMatrix.a = scaleMatrix.d = 1;
         debug (panZoomNode);
     };
