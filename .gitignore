@@ -185,3 +185,7 @@ FakesAssemblies/
 # IntelliJ
 *.iml
 .idea
+
+# MacOs
+.DS_Store
+

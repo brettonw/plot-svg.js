@@ -1,6 +1,6 @@
 /*
 PlotSvg is a Javascript module for plotting simple 2D graphs from set of {x, y} points. Styling is
-perfomed using CSS.
+perfomed using CSS where possible.
  */
 var PlotSvg = function () {
     var _ = Object.create(null);
@@ -184,14 +184,16 @@ var PlotSvg = function () {
     var startPlot = function (title, xAxis, yAxis, domain) {
         // this is carefully calculated to render a 600x400 graph in a 3x2 outer frame
         var buffer = 0.15 * domain.y.displaySize;
-        var svg = '<div class="plot-svg-div">' +
-            '<svg class="plot-svg-svg" xmlns="http://www.w3.org/2000/svg" version="1.1" ' +
-            'viewBox="' + ((7.0 * -buffer) / 4.0) + ', ' + (-buffer) + ', ' + (domain.x.displaySize + (3.0 * buffer)) + ', ' + (domain.y.displaySize + (2.0 * buffer)) + '" ' +
-            'preserveAspectRatio="xMidYMid meet"' +
-            ' onmousedown="PlotSvg.startDrag(event)" onmouseup="PlotSvg.endDrag(event)" onmousemove="PlotSvg.drag(event)" onmousewheel="PlotSvg.wheel(event)" ondblclick="PlotSvg.dblClick(event)"' +
-            '>' +
-            '<g transform="translate(0, ' + domain.y.displaySize + '), scale(1, -1)">' +
-            '<g id="pan/zoom" transform="translate(0, 0), scale(1)" panscale="' + ((domain.x.displaySize + (3.0 * buffer)) / domain.x.displaySize) + '" style="pointer-events:none;">';
+        var svg = '<div class="plot-svg-div">';
+        svg += '<svg class="plot-svg-svg" xmlns="http://www.w3.org/2000/svg" version="1.1" ';
+        svg += 'viewBox="' + ((7.0 * -buffer) / 4.0) + ', ' + (-buffer) + ', ' + (domain.x.displaySize + (3.0 * buffer)) + ', ' + (domain.y.displaySize + (2.0 * buffer)) + '" ';
+        svg += 'preserveAspectRatio="xMidYMid meet" ';
+        svg += (typeof PanZoomSvg !== 'undefined') ? PanZoomSvg.handler : '';
+        svg += ' panscale="' + ((domain.x.displaySize + (3.0 * buffer)) / domain.x.displaySize) + '" ';
+        svg += '>';
+        svg += '<g transform="translate(0, ' + domain.y.displaySize + '), scale(1, -1)">';
+        svg += '<g id="zoom" transform="scale(1)" style="pointer-events:none;">';
+        svg += '<g id="pan" transform="translate(0, 0)">';
 
         // format plot labels according to their order of magnitude and
         // desired precision
@@ -373,166 +375,6 @@ var PlotSvg = function () {
         return result;
     };
 
-    var debug = function (panZoomNode) {
-        var baseVal = panZoomNode.transform.baseVal;
-        var translateMatrix = baseVal.getItem (0).matrix;
-        var scale = baseVal.getItem (1).matrix.a.toPrecision(3);
-        var output = "Tx (" + translateMatrix.e.toPrecision(3) + ", " + translateMatrix.f.toPrecision(3) + "), Sc (" + scale + ")";
-        var debugDiv = document.getElementById("debug");
-        debugDiv.innerHTML = output;
-    };
-
-    var constrain = function (panZoomNode) {
-        return;
-        // viewbox -105,-60,780,520, vs 600x400
-        var baseVal = panZoomNode.transform.baseVal;
-        var translateMatrix = baseVal.getItem (0).matrix;
-        var scale = (baseVal.getItem (1).matrix.a) - 1.0;
-
-        // XXX want to get rid of these damn magic numbers...
-        var minX = -780 * scale;
-        var maxX = 105 * scale;
-        if (translateMatrix.e < minX) { translateMatrix.e = minX; }
-        if (translateMatrix.e > maxX) { translateMatrix.e = maxX; }
-
-        var minY = -520 * scale;
-        var maxY = 60 * scale;
-        if (translateMatrix.f < minY) { translateMatrix.f = minY; }
-        if (translateMatrix.f > maxY) { translateMatrix.f = maxY; }
-
-
-    };
-
-    _.startDrag = function (event) {
-        var panZoomNode = event.currentTarget.getElementById("pan/zoom");
-        var plotSvgDragData = panZoomNode.plotSvgDragData = {};
-        var transform = panZoomNode.transform.baseVal.getItem (0).matrix;
-        plotSvgDragData.lastTranslate = { x: transform.e, y: transform.f};
-        plotSvgDragData.startPt = { x: event.offsetX, y: event.offsetY };
-        plotSvgDragData.panScale = panZoomNode.attributes.panscale.value;
-        debug (panZoomNode);
-    };
-
-    _.endDrag = function (event){
-        var panZoomNode = event.currentTarget.getElementById("pan/zoom");
-        delete panZoomNode.plotSvgDragData;
-    };
-
-    _.drag = function (event){
-        var panZoomNode = event.currentTarget.getElementById("pan/zoom");
-        if (panZoomNode.hasOwnProperty ("plotSvgDragData")) {
-            var plotSvgDragData = panZoomNode.plotSvgDragData;
-            var startPt = plotSvgDragData.startPt;
-            var delta = { x:event.offsetX - startPt.x, y:event.offsetY - startPt.y };
-            var translateMatrix = panZoomNode.transform.baseVal.getItem (0).matrix;
-            var lastTranslate = plotSvgDragData.lastTranslate;
-            var panScale = plotSvgDragData.panScale;
-            translateMatrix.e = lastTranslate.x + (delta.x * panScale);
-            translateMatrix.f = lastTranslate.y - (delta.y * panScale);
-            constrain (panZoomNode);
-            debug (panZoomNode);
-        }
-    };
-
-    var zoomTable = [];
-    _.wheel = function (event) {
-        // get the pan/zoom node under the event target
-        var panZoomNode = event.currentTarget.getElementById("pan/zoom");
-
-        // get the plot zoom data... if the plot zoom data has never been accessed, initialize it
-        // with sensible defaults
-        var plotSvgZoomData = panZoomNode.plotSvgZoomData;
-        if (!panZoomNode.hasOwnProperty("plotSvgZoomData")) {
-            plotSvgZoomData = panZoomNode.plotSvgZoomData = {};
-            plotSvgZoomData.zoomTableIndex = 0;
-            plotSvgZoomData.panScale = panZoomNode.attributes.panscale.value;
-            plotSvgZoomData.count = 0;
-
-            // generate a bunch of steps for zooming smoothly, this uses a square root curve for a
-            // perceptually linear progression
-            var steps = 100;
-            var range = 3;
-            for (var i = 0; i <= steps; ++i) {
-                var delta = i / steps;
-                zoomTable.push(1 + ((delta * delta) * range));
-            }
-        }
-
-        // set up the basic data we'll use
-        var baseVal = panZoomNode.transform.baseVal;
-        var translateMatrix = baseVal.getItem (0).matrix;
-        var scaleMatrix = baseVal.getItem (1).matrix;
-        plotSvgZoomData.count++;
-
-        // check for some pre-existing values
-        if (plotSvgZoomData.zoomTableIndex != 0) {
-            var lastScaleMinus1 = zoomTable[plotSvgZoomData.zoomTableIndex] - 1;
-            var x = -translateMatrix.e / lastScaleMinus1;
-            var y = -translateMatrix.f / lastScaleMinus1;
-            console.log ("last (" + x + ", " + y + ")");
-        }
-
-        // adjust the zoom according to the mouse motion
-        if (event.deltaY > 0) {
-            // positive is down/out
-            plotSvgZoomData.zoomTableIndex = Math.max(plotSvgZoomData.zoomTableIndex - 1, 0);
-        } else if (event.deltaY < 0) {
-            plotSvgZoomData.zoomTableIndex = Math.min (plotSvgZoomData.zoomTableIndex + 1, zoomTable.length - 1);
-        }
-        var scale = zoomTable[plotSvgZoomData.zoomTableIndex];
-        var scaleMinus1 = scale - 1.0;
-
-        // the existing matrix transformation values represent a certain offset in x from a previous
-        // zoom operation
-
-        // compute the current center in normalized view space
-        /*
-        var center = {
-            x: translateMatrix.e = -x * plotWidth * scaleMinus1,
-            y: translateMatrix.f = -y * plotHeight * scaleMinus1
-        }
-        */
-
-        // compute the current mouse position in normalized view space
-        var panScale = panZoomNode.attributes.panscale.value;
-        var mouse = {
-            x: Math.min(Math.max(((event.offsetX * panScale) - 105) / plotWidth, 0), 1),
-            y: Math.min(Math.max((plotHeight - ((event.offsetY * panScale) - 60)) / plotHeight, 0), 1)
-        };
-        console.log ("now: " + plotSvgZoomData.count + ", xy (" + mouse.x + ", " + mouse.y + ")");
-
-        /*
-        console.log ("-----");
-        console.log ("event.offsetY: " + event.offsetY);
-        console.log ("panscale: " + panScale);
-        console.log ("(pre-subtraction): " + event.offsetY * panScale);
-        console.log ("y: " + y);
-        //y = y / plotHeight;
-        console.log ("y (final): " + y);
-*/
-
-        translateMatrix.e = -mouse.x * plotWidth * scaleMinus1;
-        translateMatrix.f = -mouse.y * plotHeight * scaleMinus1;
-        scaleMatrix.a = scaleMatrix.d = scale;
-        constrain (panZoomNode);
-        debug (panZoomNode);
-
-        // test
-        //var x = -translateMatrix.e / scaleMinus1;
-        //var y = -translateMatrix.f / scaleMinus1;
-        //console.log ("test (" + x + ", " + y + ")");
-    };
-
-    _.dblClick = function (event) {
-        // reset
-        var panZoomNode = event.currentTarget.getElementById("pan/zoom");
-        var baseVal = panZoomNode.transform.baseVal;
-        var translateMatrix = baseVal.getItem (0).matrix;
-        translateMatrix.e = translateMatrix.f = 0;
-        var scaleMatrix = baseVal.getItem (1).matrix;
-        scaleMatrix.a = scaleMatrix.d = 1;
-        debug (panZoomNode);
-    };
 
     return _;
 }();
