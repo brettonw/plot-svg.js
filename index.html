@@ -27,7 +27,7 @@
             }
             plotDataArray.push (plotData2);
 
-			var svg = PlotSvg.multipleLine("X * X", "X", "Y", plotDataArray, ["X*X", "1.0e4-(X*X)"]);
+			var svg = PlotSvg.setLegendPosition(440, 340).multipleLine("X * X", "X", "Y", plotDataArray, ["X*X", "1.0e4-(X*X)"]);
 			//plotSvg = PlotSvg.wrap(plotSvg, 450, "display", "centered");
 			document.getElementById("plot").innerHTML = svg;
         }
