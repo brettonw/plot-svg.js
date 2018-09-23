@@ -10,6 +10,15 @@ let PlotSvg = function () {
     let plotWidth = 600;
     let plotHeight = 400;
 
+    let legendX = 440;
+    let legendY = 240;
+
+    _.setLegendPosition = function (shouldLegendX, shouldLegendY) {
+        legendX = shouldLegendX;
+        legendY = shouldLegendY;
+        return this;
+    };
+
     // some styling values
     let plotLines = true;
     let plotPoints = true;
@@ -256,8 +265,8 @@ let PlotSvg = function () {
         let legendSize = 24;
         let legendBuffer = 6;
         let height = ((legendSize + legendBuffer) * legend.length) + legendBuffer;
-        let x = 440;
-        let y = 240 - (height / 2);
+        let x = legendX;
+        let y = legendY - (height / 2);
         svg += '<rect class="plot-svg-plot-legend" x="' + x +'" y="' + y + '" height="' + height + '" />';
         for (let i = 0, count = legend.length; i < count; ++i) {
             let xx = x + legendBuffer;
