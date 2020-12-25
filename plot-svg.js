@@ -268,10 +268,10 @@ let PlotSvg = function () {
         let x = legendX;
         let y = legendY - (height / 2);
         svg += '<rect class="plot-svg-plot-legend" x="' + x +'" y="' + y + '" height="' + height + '" />';
-        for (let i = 0, count = legend.length; i < count; ++i) {
+        for (let i = 0, count = legend.length, counter = 0; i < count; ++i) {
             if (legend[i].length > 0) {
                 let xx = x + legendBuffer;
-                let yy = (y + legendBuffer) + (i * (legendSize + legendBuffer));
+                let yy = (y + legendBuffer) + (counter++ * (legendSize + legendBuffer));
                 svg += '<rect class="plot-svg-plot-legend-box" x="' + xx + '" y="' + yy + '" fill="' + colors[i % colors.length] + '" width="' + legendSize + '" height="' + legendSize + '"  />';
                 xx += legendSize + legendBuffer;
                 yy += legendBuffer;
