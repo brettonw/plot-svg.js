@@ -262,12 +262,18 @@ let PlotSvg = function () {
 
     // add a legend
     let plotLegend = function (svg, legend) {
+        // count the number of actual legend entries
+        let legendCount = (legend.map ( a => (a.length > 0) ? 1 : 0 )).reduce ((total, current) => total + current, 0);
+
+        // size the legend box
         let legendSize = 24;
         let legendBuffer = 6;
-        let height = ((legendSize + legendBuffer) * legend.length) + legendBuffer;
+        let height = ((legendSize + legendBuffer) * legendCount) + legendBuffer;
         let x = legendX;
         let y = legendY - (height / 2);
         svg += '<rect class="plot-svg-plot-legend" x="' + x +'" y="' + y + '" height="' + height + '" />';
+
+        // add all valid entries to the legend
         for (let i = 0, count = legend.length, counter = 0; i < count; ++i) {
             if (legend[i].length > 0) {
                 let xx = x + legendBuffer;
