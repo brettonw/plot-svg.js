@@ -269,12 +269,14 @@ let PlotSvg = function () {
         let y = legendY - (height / 2);
         svg += '<rect class="plot-svg-plot-legend" x="' + x +'" y="' + y + '" height="' + height + '" />';
         for (let i = 0, count = legend.length; i < count; ++i) {
-            let xx = x + legendBuffer;
-            let yy = (y + legendBuffer) + (i * (legendSize + legendBuffer));
-            svg += '<rect class="plot-svg-plot-legend-box" x="' + xx + '" y="' + yy + '" fill="' + colors[i % colors.length] + '" width="' + legendSize + '" height="' + legendSize + '"  />';
-            xx += legendSize + legendBuffer;
-            yy += legendBuffer;
-            svg += '<text class="plot-svg-plot-legend-label" x="' + xx + '" y="-' + yy + '" transform="scale(1,-1)">' + legend[i] + '</text>';
+            if (legend[i].length > 0) {
+                let xx = x + legendBuffer;
+                let yy = (y + legendBuffer) + (i * (legendSize + legendBuffer));
+                svg += '<rect class="plot-svg-plot-legend-box" x="' + xx + '" y="' + yy + '" fill="' + colors[i % colors.length] + '" width="' + legendSize + '" height="' + legendSize + '"  />';
+                xx += legendSize + legendBuffer;
+                yy += legendBuffer;
+                svg += '<text class="plot-svg-plot-legend-label" x="' + xx + '" y="-' + yy + '" transform="scale(1,-1)">' + legend[i] + '</text>';
+            }
         }
         return svg;
     };
